@@ -3,7 +3,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection;
 
-public class BotValues{
+public class BotValues {
     public static double armOffset = -14; //-19
     public static double teleOpArmOffset = 0;
     

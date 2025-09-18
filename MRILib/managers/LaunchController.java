@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
+import MRILib.GameValues.*;
+
 
 // IS multithreaded
 public class LaunchController implements Runnable {
@@ -16,14 +18,16 @@ public class LaunchController implements Runnable {
 
     public enum LaunchMode {
         OFF,  // No motor action
-        FIRE, // Aim and fire
-        HOLD  // Aim at target, but do not fire
+        FIRE,  // Aim and fire
+        POWER,  // Power flywheels, but don't aim at target
+        HOLD  // Aim at target with power, but do not fire
     }
 
     // Volatile stuff can get updated from outside
-    public volatile LaunchMode launchMode = LaunchMode.OFF;
-    public volatile Pose2D launchTarget;
     public volatile boolean running = true;
+    public volatile LaunchMode launchMode = LaunchMode.OFF;
+    public volatile Pose2D target;
+    public volatile double launchAngle = 30d;
 
     private volatile double leftSpinVel;
     private volatile double rightSpinVel;
@@ -47,7 +51,7 @@ public class LaunchController implements Runnable {
         double previousTime = timer.seconds();
         
         while (running) {
-            // Init variables
+            // Init variables?
             
             // Time control to maintain thread-safety
             double currentTime = timer.seconds();
@@ -57,16 +61,16 @@ public class LaunchController implements Runnable {
             // DO FANCY MATH HERE
             // ...
             // ...
-            
-            // Theoretically, always have aiming system (if mechanically present) facing towards goal, therefore;
-            // If facing direction, turn launcher towards proper firing angle
+
 
             // Now, only launch if on
             switch (launchMode) {
                 case FIRE:
                     // Power firing using above calculated firing solution.
+                case POWER:
+                    // Hold power, but do not aim at target
                 case HOLD:
-                    // Aim towards target, but do not fire
+                    // Aim towards target, hold flywheel power, but do not fire
                 case OFF:
                     // Nothing happens
             }
@@ -88,8 +92,8 @@ public class LaunchController implements Runnable {
         launchMode = mode;
     }
 
-    public synchronized void setLaunchTarget(Pose2D target) {
-        launchTarget = target;
+    public synchronized void setLaunchTarget(Pose2D t) {
+        target = t;
     }
 
     public void stop() {

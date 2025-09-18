@@ -81,6 +81,9 @@ public class AutonExample extends LinearOpMode {
         Pose2D farLaunch = new Pose2D(DistanceUnit.INCH, 63, -12 * reflection, AngleUnit.DEGREES, -180 * reflection);
         Pose2D rightBallTop = new Pose2D(DistanceUnit.INCH, 36, -33 * reflection, AngleUnit.DEGREES, -90 * reflection);
 
+        // Add permanent states
+        asm.addState("P-LAUNCHZONE");
+
         bot.setPosition(startPos); 
         dsm.moveTo(startPos).run(() ->
         asm.addState("PREFIRE"));

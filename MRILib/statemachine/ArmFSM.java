@@ -29,7 +29,11 @@ import MRILib.util.*;
 import java.util.function.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
+import static MRILib.GameValues.*;
 import MRILib.managers.LaunchController.LaunchMode;
 
 public class ArmFSM {
@@ -47,6 +51,9 @@ public class ArmFSM {
     boolean auton;
     
     Telemetry telemetry;
+
+    // Global variables
+    boolean inLaunchZone = false;
     
     // Constructor for Auton when gamepads are not needed
     public ArmFSM(LaunchBot bot, Telemetry telemetry) {
@@ -177,10 +184,17 @@ public class ArmFSM {
             }
         };
 
-        new ArmState("PREFIRE") {
+        new ArmState("AIM") {
             @Override
             void update() {
                 bot.setLaunchControllerMode(LaunchMode.HOLD);
+            }
+        };
+
+        new ArmState("POWER") {
+            @Override
+            void update() {
+                bot.setLaunchControllerMode(LaunchMode.POWER);
             }
         };
 
@@ -188,6 +202,21 @@ public class ArmFSM {
             @Override
             void update() {
                 bot.setLaunchControllerMode(LaunchMode.FIRE);
+            }
+        };
+
+        // Permanent states, usually logic for setting globals
+        new ArmState("P-LAUNCHZONE") {
+            @Override
+            void update() {
+                Pose2D p = bot.getPosition();
+                if (p.getX(DistanceUnit.INCH) + Math.abs(p.getY(DistanceUnit.INCH)) < SMALLEST_WIDTH) {  // Large zone
+                    inLaunchZone = true;
+                } else if (-p.getX(DistanceUnit.INCH) + 54 + Math.abs(p.getY(DistanceUnit.INCH)) < SMALLEST_WIDTH) {  // Small zone
+                    inLaunchZone = true;
+                } else {
+                    inLaunchZone = false;
+                }
             }
         };
 

@@ -1,4 +1,4 @@
-package eventlistener;
+package MRILib.eventlistener;
 
 public class BotEvent {
     

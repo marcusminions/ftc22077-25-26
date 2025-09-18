@@ -1,9 +1,9 @@
-// package MRILib.eventlistener
-package main.java.MRILib.eventlistener;
+package MRILib.eventlistener;
+//package main.java.MRILib.eventlistener;
 
 import java.util.*;
 import java.util.function.Consumer;
-import eventlistener.BotEvents.*;
+import MRILib.eventlistener.BotEvent.*;
 
 public class BotEventManager {
     public enum EventType {
