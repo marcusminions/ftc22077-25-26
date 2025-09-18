@@ -7,6 +7,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
+import MRILib.eventlistener.BotEventManager;
+import MRILib.eventlistener.BotEventManager.*;
+import MRILib.eventlistener.BotEvent;
 import MRILib.GameValues.*;
 
 
@@ -38,9 +41,18 @@ public class LaunchController implements Runnable {
     private double leftSpinVelPrev;
     private double rightSpinVelPrev;
     
+    private double deltaTheta;
+
     public LaunchController(LaunchBot bot) {
         this.bot = bot;
         telemetry = bot.getTelemetry();
+    }
+
+    private void overrideSteering(boolean o, double a) {
+        BotEventManager.broadcast(EventType.OVERRIDE_DIRECTION, new BotEvent(){ 
+            public boolean override = o;
+            public double angle = a;
+        });
     }
     
     @Override
@@ -49,7 +61,7 @@ public class LaunchController implements Runnable {
         long nextLoopTime = System.nanoTime() + loopTime * 1_000_000;
         ElapsedTime timer = new ElapsedTime();
         double previousTime = timer.seconds();
-        
+
         while (running) {
             // Init variables?
             
@@ -61,18 +73,23 @@ public class LaunchController implements Runnable {
             // DO FANCY MATH HERE
             // ...
             // ...
+            deltaTheta = 0.0;  // Placeholder
 
 
             // Now, only launch if on
             switch (launchMode) {
                 case FIRE:
                     // Power firing using above calculated firing solution.
+                    overrideSteering(true, deltaTheta);
                 case POWER:
                     // Hold power, but do not aim at target
+                    overrideSteering(false, 0d);
                 case HOLD:
                     // Aim towards target, hold flywheel power, but do not fire
+                    overrideSteering(true, deltaTheta);
                 case OFF:
                     // Nothing happens
+                    overrideSteering(false, 0d);
             }
             
             // END OF LOOP ACTIONS -- Waiting until next loop

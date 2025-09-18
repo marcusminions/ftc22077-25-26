@@ -170,9 +170,8 @@ public class PIDController {
 
 
 
-    
-    public void moveTo(double x, double y, double degrees)
-    { // sets the target position to move towards
+    // sets the target position to move towards
+    public void moveTo(double x, double y, double degrees) {
         xPID.setTarget(x);
         targetX = x;
         yPID.setTarget(y);
@@ -180,6 +179,11 @@ public class PIDController {
         targetRadians = Math.toRadians(degrees);
         thetaPID.setTarget(targetRadians);
     }
+
+    public void setAngle(double degrees) {
+        targetRadians = Math.toRadians(degrees);
+        thetaPID.setTarget(targetRadians);
+    } 
 
     public void setSpeeds(double strafe, double ang){
         setMaxSpeed(strafe);
