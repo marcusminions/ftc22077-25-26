@@ -4,6 +4,9 @@ import MRILib.managers.*;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import MRILib.motion.PIDController;
 import MRILib.util.Mathf;
+import MRILib.eventlistener.BotEventManager.*;
+import MRILib.eventlistener.BotEventManager;
+import MRILib.eventlistener.BotEvent;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -14,6 +17,7 @@ import java.util.ArrayList;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes.DetectorResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DriveFSM
 {
@@ -87,21 +91,30 @@ public class DriveFSM
         { // Overriding the base methods of BotState with logic specific to this state
             double tx = x;
             double ty = y;
-            double tAngle = theta;
+            double originalTAngle = theta;
             ElapsedTime timer;
+
+            AtomicReference<Double> tAngle = new AtomicReference<>(theta);
+            void detectOverrideAngle(BotEvent event) {
+                if (event.override) tAngle.set(event.angle);
+                else tAngle.set(originalTAngle);
+            }
             
             @Override
             void start(){
                 // Running parallel arm control
-                if(command!=null)command.run(); 
+                if(command!=null)command.run();
 
                 // Setting PID target position
-                pid.moveTo(tx,ty,tAngle);
+                pid.moveTo(tx,ty,tAngle.get());
+    
+                // Subscribe to overriding of angle
+                BotEventManager.subscribe(EventType.OVERRIDE_DIRECTION, event -> detectOverrideAngle(event));
 
                 // Saving old values
                 lastX = tx;
                 lastY = ty;
-                lastAngle = tAngle;
+                lastAngle = tAngle.get();
 
                 // Starting timer for timeout
                 timer = new ElapsedTime();
@@ -109,13 +122,14 @@ public class DriveFSM
             @Override
             void update(){
                 // Updating pid to set motor values
+                pid.setAngle(tAngle.get());
                 pid.update();
 
                 // Calculating distance from target position using odometry
                 Pose2D curPos = bot.getPosition();
                 double deltaX = tx - curPos.getX(DistanceUnit.INCH);
                 double deltaY = ty - curPos.getY(DistanceUnit.INCH);
-                double deltaAngle = bot.getHeading()-tAngle;
+                double deltaAngle = bot.getHeading()-tAngle.get();
                 //deltaAngle = deltaAngle;
                 double dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
                 telemetry.addData("error", dist);
