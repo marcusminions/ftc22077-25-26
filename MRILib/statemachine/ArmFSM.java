@@ -33,6 +33,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
+import MRILib.eventlistener.BotEventManager.*;
+import MRILib.eventlistener.BotEventManager;
+import MRILib.eventlistener.BotEvent;
+
 import static MRILib.GameValues.*;
 import MRILib.managers.LaunchController.LaunchMode;
 
@@ -54,6 +58,17 @@ public class ArmFSM {
 
     // Global variables
     boolean inLaunchZone = false;
+    List<COLOR> inventory = new ArrayList<>();
+
+    // Miscellaneous functions
+    void detectIntake(BotEvent event) {
+        if (inventory.size() > 2) inventory.remove(0);
+        inventory.add(event.color);
+    }
+
+    void detectLaunch(BotEvent event) {
+        if (inventory.size() > 0) inventory.remove(0);
+    }
     
     // Constructor for Auton when gamepads are not needed
     public ArmFSM(LaunchBot bot, Telemetry telemetry) {
@@ -156,25 +171,9 @@ public class ArmFSM {
     }
 
     private void init() {
-
-        // // DEFAULT STATE
-        // new ArmState("DEFAULT") {
-        //     @Override
-        //     void update() {
-        //         bot.setSlidesTarget(-50);
-        //         if(bot.getSlidePos()<500) {
-        //             if(bot.getPivotTheta()<-15) {
-        //                 bot.setPivotTheta(-15); //-15
-        //             }else{
-        //                 bot.setPivotTheta(-25); //-15
-        //             }
-        //         }
-                
-                
-        //         bot.setForearm(1, 1);  // CHANGE
-        //         bot.setClaw(1);  // CHANGE
-        //     }
-        // };
+        // subscribe to broadcasts
+        BotEventManager.subscribe(EventType.INTAKE, event -> detectIntake(event));
+        BotEventManager.subscribe(EventType.LAUNCH, event -> detectLaunch(event));
 
         // DEFAULT STATE
         new ArmState("DEFAULT") {
@@ -187,7 +186,7 @@ public class ArmFSM {
         new ArmState("AIM") {
             @Override
             void update() {
-                bot.setLaunchControllerMode(LaunchMode.HOLD);
+                bot.setLaunchControllerMode(LaunchMode.AIM);
             }
         };
 
@@ -205,14 +204,14 @@ public class ArmFSM {
             }
         };
 
-        // Permanent states, usually logic for setting globals
+        // Permanent states, usually logic for setting globals that isn't handled by broadcasts, start every name with P-
         new ArmState("P-LAUNCHZONE") {
             @Override
             void update() {
                 Pose2D p = bot.getPosition();
-                if (p.getX(DistanceUnit.INCH) + Math.abs(p.getY(DistanceUnit.INCH)) < SMALLEST_WIDTH) {  // Large zone
+                if (p.getX(DistanceUnit.INCH) + Math.abs(p.getY(DistanceUnit.INCH)) < WIDTH / 2) {  // Large zone
                     inLaunchZone = true;
-                } else if (-p.getX(DistanceUnit.INCH) + 54 + Math.abs(p.getY(DistanceUnit.INCH)) < SMALLEST_WIDTH) {  // Small zone
+                } else if (-p.getX(DistanceUnit.INCH) + 54 + Math.abs(p.getY(DistanceUnit.INCH)) < WIDTH / 2) {  // Small zone
                     inLaunchZone = true;
                 } else {
                     inLaunchZone = false;

@@ -26,7 +26,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 
-public class AutoBotLL extends ArmBotFF{
+public class AutoBotLL extends LaunchBot {
     
     public Limelight3A limelight;
     public AprilTagProcessor aprilTag;
