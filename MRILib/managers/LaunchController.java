@@ -23,7 +23,7 @@ public class LaunchController implements Runnable {
         OFF,  // No motor action
         FIRE,  // Aim and fire
         POWER,  // Power flywheels, but don't aim at target
-        AIM  // Aim at target with power, but do not fire
+        HOLD  // Aim at target with power, but do not fire
     }
 
     // Volatile stuff can get updated from outside
@@ -42,8 +42,6 @@ public class LaunchController implements Runnable {
     private double rightSpinVelPrev;
     
     private double deltaTheta;
-    private double targetLeftSpinVel;
-    private double targetRightSpinVel;
 
     public LaunchController(LaunchBot bot) {
         this.bot = bot;
@@ -72,41 +70,26 @@ public class LaunchController implements Runnable {
             double deltaTime = currentTime-previousTime;
             previousTime = currentTime;
 
-            // VENKAT DO THE FANCY MATH HERE
+            // DO FANCY MATH HERE
             // ...
             // ...
+            deltaTheta = 0.0;  // Placeholder
 
-            // Placeholders
-            deltaTheta = 0.0;
-            targetLeftSpinVel = 0.0;
-            targetRightSpinVel = 0.0;
 
             // Now, only launch if on
             switch (launchMode) {
-            case FIRE:
-                // Power firing using above calculated firing solution.
-                overrideSteering(true, deltaTheta);
-                
-                bot.setLeftSpinVelocity(targetLeftSpinVel);
-                bot.setRightSpinVelocity(targetRightSpinVel);
-
-            case POWER:
-                // Hold power, but do not aim at target
-                overrideSteering(false, 0d);
-
-                bot.setLeftSpinVelocity(targetLeftSpinVel);
-                bot.setRightSpinVelocity(targetRightSpinVel);
-
-            case AIM:
-                // Aim towards target, hold flywheel power, but do not fire
-                overrideSteering(true, deltaTheta);
-
-                bot.setLeftSpinVelocity(targetLeftSpinVel);
-                bot.setRightSpinVelocity(targetRightSpinVel);
-
-            case OFF:
-                // Nothing happens
-                overrideSteering(false, 0d);
+                case FIRE:
+                    // Power firing using above calculated firing solution.
+                    overrideSteering(true, deltaTheta);
+                case POWER:
+                    // Hold power, but do not aim at target
+                    overrideSteering(false, 0d);
+                case HOLD:
+                    // Aim towards target, hold flywheel power, but do not fire
+                    overrideSteering(true, deltaTheta);
+                case OFF:
+                    // Nothing happens
+                    overrideSteering(false, 0d);
             }
             
             // END OF LOOP ACTIONS -- Waiting until next loop

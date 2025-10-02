@@ -6,36 +6,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 public class GameValues {
 
-    // Miscellaneous variables
-    public static enum COLOR {
-        RED,
-        BLUE,
-        GREEN,
-        PURPLE
-    }
-
-    /* --- FIELD VALUES (inches) ---
-     * Base Zone:          18   x 18
-     * Gate Zone:          2.75 x 10
-     * Loading Zone:       23   x 23
-     * Secret Tunnel Zone: 46.5 x 6.125
-     * Spike Mark:        ~1    x 10
-     */
-
-    // Field positions, directions are relative to alliance
-    public static Pose2D RED_GOAL =         new Pose2D(DistanceUnit.INCH, -65, 65, AngleUnit.DEGREES, 0);
-    public static Pose2D RED_SPIKE_LEFT =   new Pose2D(DistanceUnit.INCH, -12, -48, AngleUnit.DEGREES, 0);
-    public static Pose2D RED_SPIKE_MIDDLE = new Pose2D(DistanceUnit.INCH, 12, -48, AngleUnit.DEGREES, 0);
-    public static Pose2D RED_SPIKE_RIGHT =  new Pose2D(DistanceUnit.INCH, 36, -48, AngleUnit.DEGREES, 0);
-
-    public static Pose2D BLUE_GOAL =         new Pose2D(DistanceUnit.INCH, -65, -65, AngleUnit.DEGREES, 0);
-    public static Pose2D BLUE_SPIKE_LEFT =   new Pose2D(DistanceUnit.INCH, 36, 48, AngleUnit.DEGREES, 0);
-    public static Pose2D BLUE_SPIKE_MIDDLE = new Pose2D(DistanceUnit.INCH, 12, 48, AngleUnit.DEGREES, 0);
-    public static Pose2D BLUE_SPIKE_RIGHT =  new Pose2D(DistanceUnit.INCH, -12, 48, AngleUnit.DEGREES, 0);
+    // Field positions
+    public static Pose2D RED_TARGET = new Pose2D(DistanceUnit.INCH, -65, 65, AngleUnit.DEGREES, 0);
+    public static Pose2D BLUE_TARGET = new Pose2D(DistanceUnit.INCH, -65, -65, AngleUnit.DEGREES, 0);
 
     // Robot Constants
-    public static final double WIDTH = 12;
-    public static final double LENGTH = 16d;
+    public static final double SMALLEST_WIDTH = 6d;  // Smallest width of the robot in inches
 
     // Launch related constants
 
@@ -45,7 +21,7 @@ public class GameValues {
     public static final double GRAVITY = 9.807;  // m/s^2
     public static final double GOAL_HEIGHT = .9845;  // We want to aim for 7cm above this
 
-    /* --- FORMULAS ---
+    /* ---FORMULAS---
      *
      * FOR STATIONARY FIRING
      *          __________________

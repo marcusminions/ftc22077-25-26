@@ -4,9 +4,13 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection;
 
 public class BotValues {
+    public static double armOffset = -14; //-19
+    public static double teleOpArmOffset = 0;
     
     public static DcMotor.Direction LEFTDIR = DcMotor.Direction.FORWARD;
     public static DcMotor.Direction RIGHTDIR = DcMotor.Direction.REVERSE;
+    public static DcMotor.Direction SLIDEDIR = DcMotor.Direction.FORWARD;
+    public static DcMotor.Direction PIVOTDIR = DcMotor.Direction.REVERSE;
     public static LogoFacingDirection LOGO_DIR = LogoFacingDirection.LEFT;
     public static UsbFacingDirection USB_DIR = UsbFacingDirection.UP;
 

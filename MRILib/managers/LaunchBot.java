@@ -32,7 +32,7 @@ public class LaunchBot extends Bot {
     // Update launch controller
     public void update() {
         super.update();
-        launchController.updateCurrentState(currentPosition, velocity, getLeftSpinVelocity(), getRightSpinVelocity());
+        launchController.updateCurrentState(currentPosition, velocity, getleftSpinVelocity(), getrightSpinVelocity());
         updateEncoders();
     }
 
@@ -77,16 +77,16 @@ public class LaunchBot extends Bot {
     }
 
     // Getters
-    public int getLeftSpinPos()          { return leftSpinPos; }
-    public int getRightSpinPos()         { return rightSpinPos; }
-    public double getLeftSpinVelocity()  { return leftSpin.getVelocity(); }
-    public double getRightSpinVelocity() { return rightSpin.getVelocity(); }
+    public int getleftSpinPos()         { return leftSpinPos; }
+    public int getrightSpinPos()         { return rightSpinPos; }
+    public double getleftSpinVelocity() { return leftSpin.getVelocity(); }
+    public double getrightSpinVelocity() { return rightSpin.getVelocity(); }
 
     // Setters
-    public void setLeftSpinPower(double power)        { leftSpin.setPower(power); }
-    public void setRightSpinPower(double power)       { rightSpin.setPower(power); }
-    public void setLeftSpinVelocity(double velocity)  { leftSpin.setVelocity(velocity); }
-    public void setRightSpinVelocity(double velocity) { rightSpin.setVelocity(velocity); }
+    public void setleftSpinPower(double power)       { leftSpin.setPower(power); }
+    public void setrightSpinPower(double power)       { rightSpin.setPower(power); }
+    public void setleftSpinVelocity(double velocity) { leftSpin.setVelocity(velocity); }
+    public void setrightSpinVelocity(double velocity) { rightSpin.setVelocity(velocity); }
 
     public void setLaunchControllerMode(LaunchController.LaunchMode mode) {
         launchController.setLaunchMode(mode);

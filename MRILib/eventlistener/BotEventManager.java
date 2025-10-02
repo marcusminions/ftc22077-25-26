@@ -7,9 +7,7 @@ import MRILib.eventlistener.BotEvent.*;
 
 public class BotEventManager {
     public enum EventType {
-        OVERRIDE_DIRECTION,
-        LAUNCH,
-        INTAKE
+        OVERRIDE_DIRECTION
     }
     private static HashMap<EventType, List<Consumer<BotEvent>>> listeners = new HashMap<>();
 
