@@ -132,7 +132,7 @@ public class AutoBotLL extends ArmBotFF{
         }
         return (false);
     }
-    public double[] updatePosition(AprilTagDetection detection) {
+    public void updatePosition(AprilTagDetection detection) {
         double x = detection.robotPose.getPosition().x;
         double y = detection.robotPose.getPosition().y;
         double bearing = detection.ftcPose.bearing;
@@ -148,9 +148,7 @@ public class AutoBotLL extends ArmBotFF{
             X = aprilTagX - x;
             Y = aprilTagY - y;
             setPosition(X, Y);
-            return new double[]{X,Y};
         }
-        return null;
     } 
     
 }

@@ -1,6 +1,7 @@
 package MRILib.managers;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -11,11 +12,10 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import org.pmrobotics.ledmatrix.GoBildaPinpointDriver;
+//import org.pmrobotics.ledmatrix.GoBildaPinpointDriver;
 
 //import MRILib.util.GoBildaPinpointDriver;
 import static MRILib.BotValues.*;
-
 
 /*
  * This file contains the initialization of the drive train motors, imu, 
@@ -116,6 +116,7 @@ public class Bot {
 
         // setting the init parameters of the two odometry wheels 
         /*
+            USE MILIMETERS
             Set the odometry pod positions relative to the point that the odometry computer tracks around.
             The X pod offset refers to how far sideways from the tracking point the
             X (forward) odometry pod is. Left of the center is a positive number,
@@ -123,8 +124,8 @@ public class Bot {
             the tracking point the Y (strafe) odometry pod is. forward of center is a positive number,
             backwards is a negative number.
         */
-        odo.setOffsets(120.0, 105.0);
-        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
+        odo.setOffsets(120.0, 105.0, DistanceUnit.MM);
+        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
         // resetting the position and heading to zero (this can be reset to a different starting position
@@ -197,7 +198,10 @@ public class Bot {
     }
     private Pose2D getOdoVelocity(){
         // Returns the velocity according to the pinpoint computer
-        return odo.getVelocity();
+        double x = odo.getVelX(DistanceUnit.INCH);
+        double y = odo.getVelY(DistanceUnit.INCH);
+        Pose2D velocity = new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, 0);
+        return velocity;
     }
     public double getX(){
         // returns the X value of the current odometry position
