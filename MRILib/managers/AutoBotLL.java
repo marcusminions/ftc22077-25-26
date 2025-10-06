@@ -1,6 +1,8 @@
 package MRILib.managers;
 
 import java.util.*;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import java.util.concurrent.TimeUnit;
 
@@ -130,5 +132,23 @@ public class AutoBotLL extends LaunchBot {
         }
         return (false);
     }
+    public void updatePosition(AprilTagDetection detection) {
+        double x = detection.robotPose.getPosition().x;
+        double y = detection.robotPose.getPosition().y;
+        double bearing = detection.ftcPose.bearing;
+        double yaw = detection.ftcPose.yaw;
+        double aprilTagX = detection.ftcPose.x;
+        double aprilTagY = detection.ftcPose.y;
+        if(detection.id == 20 || detection.id == 24) {
+            //blue goal
+            setHeading(bearing - yaw);
+            double heading = bearing - yaw;
+            double Y = y * Math.cos(heading) - x * Math.sin(heading);
+            double X = y * Math.sin(heading) + x * Math.cos(heading);
+            X = aprilTagX - x;
+            Y = aprilTagY - y;
+            setPosition(X, Y);
+        }
+    } 
     
 }
