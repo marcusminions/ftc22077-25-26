@@ -1,13 +1,14 @@
-
+/*
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-
+import MRILib.managers.AutoBotLL;
 @TeleOp(name="Basic: Linear OpMode", group="Linear OpMode")
 
 public class WebcamTest extends LinearOpMode {
@@ -40,11 +41,15 @@ public class WebcamTest extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-
+            
+            AutoBotLL a = new AutoBotLL(new WebcamTest());
             // Setup a variable for each drive wheel to save power level for telemetry
             double leftPower;
             double rightPower;
-
+            for(AprilTagDetection i : a.visionPortal.getDetections()) {
+                a.updatePosition(i);
+                telemetry.addData(a.getPosition().getHeading());
+            }
             // Choose to drive using either Tank Mode, or POV Mode
             // Comment out the method that's not used.  The default below is POV.
 
@@ -71,3 +76,4 @@ public class WebcamTest extends LinearOpMode {
         }
     }
 }
+*/
