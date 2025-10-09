@@ -14,6 +14,7 @@ public class LaunchBot extends Bot {
     private DcMotorEx leftSpin;
     private DcMotorEx rightSpin;
     private DcMotor conveyor;
+    private DcMotor intake;
     private Servo kicker;
 
     private LaunchController launchController;
@@ -45,15 +46,22 @@ public class LaunchBot extends Bot {
         leftSpin = op.hardwareMap.get(DcMotorEx.class, "shootLeft");
         rightSpin = op.hardwareMap.get(DcMotorEx.class, "shootRight");
         conveyor = op.hardwareMap.get(DcMotor.class, "conveyor");
+        intake = op.hardwareMap.get(DcMotor.class, "intake");
         
         leftSpin.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSpin.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        conveyor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         
         leftSpin.setDirection(MLDIR);
         rightSpin.setDirection(MRDIR);
+        conveyor.setDirection(CONVEYDIR);
+        intake.setDirection(INDIR);
         
-        leftSpin.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightSpin.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftSpin.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightSpin.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        conveyor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         resetEncoders();
     }
@@ -99,7 +107,10 @@ public class LaunchBot extends Bot {
     public void setRightSpinVelocity(double velocity) { rightSpin.setVelocity(velocity); }
 
     public void setConveyorPower(double power)        { conveyor.setPower(power); }
+    public void setIntakePower(double power)          { intake.setPower(power); }
     public void setKickerPosition(double position)    { kicker.setPosition(position); }
+
+    public void setIntakeDirection(DcMotor.Direction dir) { intake.setDirection(dir); }
 
     public void setLaunchControllerMode(LaunchController.LaunchMode mode) {
         launchController.setLaunchMode(mode);

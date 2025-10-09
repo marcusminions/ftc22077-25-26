@@ -12,6 +12,11 @@ public class BotValues {
 
     public static DcMotor.Direction MLDIR = DcMotor.Direction.REVERSE;
     public static DcMotor.Direction MRDIR = DcMotor.Direction.FORWARD;
+    public static DcMotor.Direction CONVEYDIR = DcMotor.Direction.FORWARD;
+    public static DcMotor.Direction INDIR = DcMotor.Direction.FORWARD;
+
+    public static DcMotor.Direction FORWARD = DcMotor.Direction.FORWARD;
+    public static DcMotor.Direction REVERSE = DcMotor.Direction.REVERSE;
 
     // define robot-specific motor/wheel constants
     public static final double TICKS_PER_REVOLUTION = 384.5; //384.5
