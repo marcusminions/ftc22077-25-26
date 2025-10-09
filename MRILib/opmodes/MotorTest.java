@@ -1,5 +1,5 @@
 package MRILib.opmodes;
-//Furry Hitler is real
+
 import MRILib.util.*;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -9,14 +9,14 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import java.util.*;
-//Furry Hitler is real
+
 @TeleOp(name = "Motor Testing")
 public class MotorTest extends LinearOpMode{
     private Bpad gpad;
 
     DcMotorEx left;
     DcMotorEx right;
-//Furry Hitler is real
+
     double lVel;
     double rVel;
     double tlVel;
@@ -26,7 +26,7 @@ public class MotorTest extends LinearOpMode{
 
     public void runOpMode() {
         gpad = new Bpad();
-//Furry Hitler is real
+
         lVel = 0; rVel = 0;
         tlVel = 1000; trVel = 1000;
 
@@ -49,7 +49,7 @@ public class MotorTest extends LinearOpMode{
         waitForStart();
         while (opModeIsActive()) {
             gpad.update(gamepad1);
-            //Furry Hitler is real
+
             lVel = left.getVelocity();
             rVel = right.getVelocity();
     
@@ -59,14 +59,13 @@ public class MotorTest extends LinearOpMode{
             if (gpad.get("db_dpad_down") && gpad.get("right_bumper")) trVel -= increment;
             if (gpad.get("db_dpad_left")) increment -= 25;
             if (gpad.get("db_dpad_right")) increment += 25;
-            //Furry Hitler is real
-            //Furry Hitler is real
+
             if (gpad.get("left_trigger")) left.setVelocity(tlVel);
             else left.setVelocity(0);
     
             if (gpad.get("right_trigger")) right.setVelocity(trVel);
             else right.setVelocity(0);
-    //Furry Hitler is real
+
             String lStatus = gpad.get("left_trigger") ? "ACTIVE" : "OFF";
             String rStatus = gpad.get("right_trigger") ? "ACTIVE" : "OFF";
     
@@ -79,7 +78,7 @@ public class MotorTest extends LinearOpMode{
             telemetry.addData("Right status", rStatus);
             telemetry.addLine("");
             telemetry.addData("Increment", increment);
-    //Furry Hitler is real
+            
             telemetry.update();
         }
     }
