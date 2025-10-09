@@ -38,6 +38,8 @@ public class GameValues {
     public static final double LENGTH = 16d;
 
     // Launch related constants
+    public static double KICK_START = 1;
+    public static double KICK_END = 0;
 
     // Hopefully linear value that will translate velocity of motors using motor.setVelocity()
     // to release velocity of the ball in meters per second.

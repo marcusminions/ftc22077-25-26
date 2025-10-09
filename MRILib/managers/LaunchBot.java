@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 import static MRILib.BotValues.*;
@@ -12,6 +13,8 @@ public class LaunchBot extends Bot {
 
     private DcMotorEx leftSpin;
     private DcMotorEx rightSpin;
+    private DcMotor conveyor;
+    private Servo kicker;
 
     private LaunchController launchController;
     private Thread launchThread;
@@ -23,6 +26,7 @@ public class LaunchBot extends Bot {
     
     public LaunchBot (LinearOpMode op) {
         super(op);
+        initServos();
         initMotors();
         launchController = new LaunchController(this);
         launchThread = new Thread(launchController);
@@ -38,8 +42,9 @@ public class LaunchBot extends Bot {
 
     // Initialize all motors not part of drivetrain
     public void initMotors() {
-        leftSpin = op.hardwareMap.get(DcMotorEx.class, "leftSpin");
-        rightSpin = op.hardwareMap.get(DcMotorEx.class, "rightSpin");
+        leftSpin = op.hardwareMap.get(DcMotorEx.class, "shootLeft");
+        rightSpin = op.hardwareMap.get(DcMotorEx.class, "shootRight");
+        conveyor = op.hardwareMap.get(DcMotor.class, "conveyor");
         
         leftSpin.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSpin.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -51,6 +56,11 @@ public class LaunchBot extends Bot {
         rightSpin.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         resetEncoders();
+    }
+
+    // Initialize all servos
+    public void initServos() {
+        kicker = op.hardwareMap.get(Servo.class, "kicker");
     }
 
     // Update current and last encoder positions
@@ -87,6 +97,9 @@ public class LaunchBot extends Bot {
     public void setRightSpinPower(double power)       { rightSpin.setPower(power); }
     public void setLeftSpinVelocity(double velocity)  { leftSpin.setVelocity(velocity); }
     public void setRightSpinVelocity(double velocity) { rightSpin.setVelocity(velocity); }
+
+    public void setConveyorPower(double power)        { conveyor.setPower(power); }
+    public void setKickerPosition(double position)    { kicker.setPosition(position); }
 
     public void setLaunchControllerMode(LaunchController.LaunchMode mode) {
         launchController.setLaunchMode(mode);

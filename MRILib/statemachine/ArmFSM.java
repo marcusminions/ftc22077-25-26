@@ -29,6 +29,7 @@ import MRILib.util.*;
 import java.util.function.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
@@ -47,6 +48,9 @@ public class ArmFSM {
 
     // Currently active states
     public List<ArmState> currentStates = new ArrayList<>();
+
+    // Mutually exclusive states
+    public List<String[]> exclusiveStates = new ArrayList<String[]>();
 
     // Gamepads
     Bpad gpad1;
@@ -104,6 +108,7 @@ public class ArmFSM {
         for (ArmState state : currentStates) {
             state.update();
             transition(state);
+            checkExclusivity(state);
         }
     }
 
@@ -170,10 +175,33 @@ public class ArmFSM {
         }
     }
 
+    public void checkExclusivity(ArmState state) {
+        boolean remove = false;
+
+        // Check for exclusivity, if there is a conflict then remove the one that didn't come last
+        for (String[] mutual : exclusiveStates) {
+            if (Arrays.asList(mutual).contains(state.name)) {
+                for (ArmState c : currentStates) {
+                    if (Arrays.asList(mutual).contains(c.name) && currentStates.indexOf(c) > currentStates.indexOf(state)) {
+                        remove = true;
+                    }
+                }
+            }
+        }
+
+        // If marked for removal, end the state
+        if (remove) state.end();
+    }
+
     private void init() {
         // subscribe to broadcasts
         BotEventManager.subscribe(EventType.INTAKE, event -> detectIntake(event));
         BotEventManager.subscribe(EventType.LAUNCH, event -> detectLaunch(event));
+
+        // Add mutually exclusive states
+        exclusiveStates.add(new String[] {
+            "DEFAULT", "AIM", "POWER", "FIRE"
+        });
 
         // DEFAULT STATE
         new ArmState("DEFAULT") {
@@ -216,6 +244,14 @@ public class ArmFSM {
                 } else {
                     inLaunchZone = false;
                 }
+            }
+        };
+
+        // Controls all logic and controls for teleop
+        new ArmState("P-TELEOP") {
+            @Override
+            void update() {
+
             }
         };
 
