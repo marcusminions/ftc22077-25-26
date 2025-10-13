@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -9,25 +10,32 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
+import MRILib.managers.Bot;
+
 @TeleOp(name = "Sensor: GoBilda Pinpoint", group = "Sensor")
-public class pinpointtest extends OpMode {
+public class pinpointtest extends LinearOpMode {
     // Create an instance of the sensor
     GoBildaPinpointDriver pinpoint;
+    
+    Bot bot;
 
     @Override
-    public void init() {
+    public void runOpMode() {
         // Get a reference to the sensor
-        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
-
+        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "odo");
+        
+        bot = new Bot(this);
+        
         // Configure the sensor
         configurePinpoint();
 
         // Set the location of the robot - this should be the place you are starting the robot from
         pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
-    }
+    
 
-    @Override
-    public void loop() {
+    waitForStart();
+    while (opModeIsActive()) {
+        bot.update();
         telemetry.addLine("Push your robot around to see it track");
         telemetry.addLine("Press A to reset the position");
         if(gamepad1.a){
@@ -36,10 +44,19 @@ public class pinpointtest extends OpMode {
         }
         pinpoint.update();
         Pose2D pose2D = pinpoint.getPosition();
+        
+        bot.driveXYW(-gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
 
         telemetry.addData("X coordinate (IN)", pose2D.getX(DistanceUnit.INCH));
         telemetry.addData("Y coordinate (IN)", pose2D.getY(DistanceUnit.INCH));
         telemetry.addData("Heading angle (DEGREES)", pose2D.getHeading(AngleUnit.DEGREES));
+        telemetry.addLine("   ");
+        telemetry.addData("FL vel", bot.frontLeft.getVelocity());
+        telemetry.addData("BL vel", bot.backLeft.getVelocity());
+        telemetry.addData("FR vel", bot.frontRight.getVelocity());
+        telemetry.addData("BR vel", bot.backRight.getVelocity());
+        telemetry.update();
+    }
     }
 
     public void configurePinpoint(){
@@ -52,7 +69,7 @@ public class pinpointtest extends OpMode {
         *  The Y pod offset refers to how far forwards from the tracking point the Y (strafe) odometry pod is.
         *  Forward of center is a positive number, backwards is a negative number.
         */
-        pinpoint.setOffsets(0, 0, DistanceUnit.MM); //these are tuned for 3110-0002-0001 Product Insight #1
+        pinpoint.setOffsets(26, 0, DistanceUnit.MM); //these are tuned for 3110-0002-0001 Product Insight #1
 
         /*
          * Set the kind of pods used by your robot. If you're using goBILDA odometry pods, select either
@@ -69,7 +86,7 @@ public class pinpointtest extends OpMode {
          * you move the robot to the left.
          */
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
-                                      GoBildaPinpointDriver.EncoderDirection.FORWARD);
+                                      GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
         /*
          * Before running the robot, recalibrate the IMU. This needs to happen when the robot is stationary

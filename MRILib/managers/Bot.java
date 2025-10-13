@@ -39,10 +39,10 @@ import static MRILib.BotValues.*;
 public class Bot {
 
     //creating motor variables to be initialized in initMotors()
-    private DcMotorEx frontLeft;
-    private DcMotorEx backLeft;
-    private DcMotorEx frontRight;
-    private DcMotorEx backRight;
+    public DcMotorEx frontLeft;
+    public DcMotorEx backLeft;
+    public DcMotorEx frontRight;
+    public DcMotorEx backRight;
     
     //creating odometry computer to be initialized in initOdo()
     public GoBildaPinpointDriver odo;
@@ -248,10 +248,10 @@ public class Bot {
 
     public void setDirections()
     { //setting the directions of the motors to their values specified in the static BotValues
-        frontLeft.setDirection(LEFTDIR);
-        frontRight.setDirection(RIGHTDIR);
-        backLeft.setDirection(LEFTDIR);
-        backRight.setDirection(RIGHTDIR);
+        frontLeft.setDirection(RIGHTDIR);
+        frontRight.setDirection(LEFTDIR);
+        backLeft.setDirection(RIGHTDIR);
+        backRight.setDirection(LEFTDIR);
     }
     
     public void setMode(DcMotor.RunMode mode)
@@ -337,16 +337,22 @@ public class Bot {
 
         // adding and subtracting the x, y, and theta power values for each wheel to
         // push the robot in the vector direction made when combining all three powers
-        double lfPower = ((rx - ry - rw) / denom) / voltageMulti;
-        double rfPower = ((rx + ry + rw) / denom) / voltageMulti;
-        double lbPower = ((rx + ry - rw) / denom) / voltageMulti;
-        double rbPower = ((rx - ry + rw) / denom) / voltageMulti;
+        double lfPower = ((rx - ry + rw) / denom) / voltageMulti;
+        double rfPower = ((rx + ry - rw) / denom) / voltageMulti;
+        double lbPower = ((rx + ry + rw) / denom) / voltageMulti;
+        double rbPower = ((rx - ry - rw) / denom) / voltageMulti;
         
         // applying calculated vector powers to each motor
         frontLeft.setPower(lfPower);
         frontRight.setPower(rfPower);
         backLeft.setPower(lbPower);
         backRight.setPower(rbPower);
+        
+        // TESTING ONLY
+        // backRight.setPower(.8);
+        // frontLeft.setPower(.8);
+        // frontRight.setPower(.8);
+        // backLeft.setPower(.8);
     }
     
     public void driveFieldXYW(double fx, double fy, double fw)
