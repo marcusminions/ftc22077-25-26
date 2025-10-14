@@ -44,7 +44,7 @@ public class TestFullBot extends LinearOpMode {
         sweeperMotor = hardwareMap.get(DcMotor.class, "sweeperMotor");
         conveyorMotor = hardwareMap.get(DcMotor.class, "conveyorMotor");
         shootLeft = hardwareMap.get(DcMotorEx.class, "shootLeft");
-        shootRight = hardwareMap.get(DcMotorEx.class, "shootRight");
+        shootRight = hardwareMap.get(DcMotorEx.class,  "shootRight");
 
 
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -122,9 +122,11 @@ public class TestFullBot extends LinearOpMode {
             if (geckoWheelsOn && gamepad1.left_bumper) {
                 shootLeft.setPower(gamepad1.left_trigger);
                 shootRight.setPower(0.8 * gamepad1.left_trigger);
+                
             } else if(geckoWheelsOn) {
                 shootLeft.setPower(gamepad1.left_trigger);
                 shootRight.setPower(gamepad1.left_trigger);
+                gamepad1.rumble(150);
             }
             else {
                 shootLeft.setPower(0);
