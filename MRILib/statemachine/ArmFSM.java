@@ -259,7 +259,7 @@ public class ArmFSM {
         new ArmState("P-END") {
             @Override
             void update () {}
-        }
+        };
 
     }
 }
