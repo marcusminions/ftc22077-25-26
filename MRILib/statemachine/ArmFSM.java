@@ -255,6 +255,12 @@ public class ArmFSM {
             }
         };
 
+        // Used to end a state without transitioning
+        new ArmState("P-END") {
+            @Override
+            void update () {}
+        }
+
     }
 }
 
