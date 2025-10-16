@@ -106,14 +106,14 @@ public class TestFullBot extends LinearOpMode {
 
             //sweeper power  on its toggle state
             if (sweeperOn) {
-                sweeperMotor.setPower(.6);
+                sweeperMotor.setPower(1);
             } else {
                 sweeperMotor.setPower(0);
             }
 
             //conveyor power based on its toggle state
             if (conveyorOn) {
-                conveyorMotor.setPower(.6);
+                conveyorMotor.setPower(1);
             } else {
                 conveyorMotor.setPower(0);
             }
