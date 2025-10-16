@@ -21,29 +21,29 @@ public class LaunchController implements Runnable {
 
     public enum LaunchMode {
         OFF,  // No motor action
-        FIRE,  // Aim and fire
-        POWER,  // Power flywheels, but don't aim at target
-        AIM  // Aim at target with power, but do not fire
+        POWER,  // Power flywheels
+        AIM  // Aim at target
     }
 
     // Volatile stuff can get updated from outside
     public volatile boolean running = true;
-    public volatile LaunchMode launchMode = LaunchMode.OFF;
+    private volatile LaunchMode aimMode = LaunchMode.OFF;
+    private volatile LaunchMode powerMode = LaunchMode.OFF;
     public volatile Pose2D target;
     public volatile double launchAngle = 30d;
 
-    private volatile double leftSpinVel;
-    private volatile double rightSpinVel;
+    private volatile double leftVel;
+    private volatile double rightVel;
 
     private volatile Pose2D position;
     private volatile Pose2D velocity;
 
-    private double leftSpinVelPrev;
-    private double rightSpinVelPrev;
+    private double leftVelPrev;
+    private double rightVelPrev;
     
     private double deltaTheta;
-    private double targetLeftSpinVel;
-    private double targetRightSpinVel;
+    private double targetLeftVel;
+    private double targetRightVel;
 
     public LaunchController(LaunchBot bot) {
         this.bot = bot;
@@ -78,35 +78,14 @@ public class LaunchController implements Runnable {
 
             // Placeholders
             deltaTheta = 0.0;
-            targetLeftSpinVel = 0.0;
-            targetRightSpinVel = 0.0;
+            targetLeftVel = 0.0;
+            targetRightVel = 0.0;
 
             // Now, only launch if on
-            switch (launchMode) {
-            case FIRE:
-                // Power firing using above calculated firing solution.
-                overrideSteering(true, deltaTheta);
-                
-                bot.setLeftSpinVelocity(targetLeftSpinVel);
-                bot.setRightSpinVelocity(targetRightSpinVel);
-
-            case POWER:
-                // Hold power, but do not aim at target
-                overrideSteering(false, 0d);
-
-                bot.setLeftSpinVelocity(targetLeftSpinVel);
-                bot.setRightSpinVelocity(targetRightSpinVel);
-
-            case AIM:
-                // Aim towards target, hold flywheel power, but do not fire
-                overrideSteering(true, deltaTheta);
-
-                bot.setLeftSpinVelocity(targetLeftSpinVel);
-                bot.setRightSpinVelocity(targetRightSpinVel);
-
-            case OFF:
-                // Nothing happens
-                overrideSteering(false, 0d);
+            if (aimMode == LaunchMode.AIM) overrideSteering(true, deltaTheta);
+            if (powerMode == LaunchMode.POWER) {
+                bot.setLeftVelocity(targetLeftVel);
+                bot.setRightVelocity(targetRightVel);
             }
             
             // END OF LOOP ACTIONS -- Waiting until next loop
@@ -115,20 +94,23 @@ public class LaunchController implements Runnable {
         }
     }
 
-    public synchronized void updateCurrentState(Pose2D position, Pose2D velocity, double leftSpinV, double rightSpinV) {
+    public void updateCurrentState(Pose2D position, Pose2D velocity, double leftV, double rightV) {
         this.position = position;
         this.velocity = velocity;
-        leftSpinVel = leftSpinV;
-        rightSpinVel = rightSpinV;
+        leftVel = leftV;
+        rightVel = rightV;
+    }
+    
+    public boolean launchReady() {
+        if (Math.abs(bot.getLeftVelocity()) < Math.abs(targetLeftVel) + 20 &&
+            Math.abs(bot.getRightVelocity()) < Math.abs(targetRightVel) + 20) {
+            return true;
+        } else return false;
     }
 
-    public synchronized void setLaunchMode(LaunchMode mode) {
-        launchMode = mode;
-    }
-
-    public synchronized void setLaunchTarget(Pose2D t) {
-        target = t;
-    }
+    public void setAimMode(LaunchMode mode) { aimMode = mode; }
+    public void setPowerMode(LaunchMode mode) { powerMode = mode; }
+    public void setLaunchTarget(Pose2D t) { target = t; }
 
     public void stop() {
         running = false;

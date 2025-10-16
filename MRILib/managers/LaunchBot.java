@@ -11,8 +11,8 @@ import static MRILib.BotValues.*;
 
 public class LaunchBot extends Bot {
 
-    private DcMotorEx leftSpin;
-    private DcMotorEx rightSpin;
+    private DcMotorEx left;
+    private DcMotorEx right;
     private DcMotor conveyor;
     private DcMotor intake;
     private Servo kicker;
@@ -20,10 +20,10 @@ public class LaunchBot extends Bot {
     private LaunchController launchController;
     private Thread launchThread;
 
-    public int leftSpinPos;
-    public int rightSpinPos;
-    public int leftSpinPosPrev;
-    public int rightSpinPosPrev;
+    public int leftPos;
+    public int rightPos;
+    public int leftPosPrev;
+    public int rightPosPrev;
     
     public LaunchBot (LinearOpMode op) {
         super(op);
@@ -37,29 +37,29 @@ public class LaunchBot extends Bot {
     // Update launch controller
     public void update() {
         super.update();
-        launchController.updateCurrentState(currentPosition, velocity, getLeftSpinVelocity(), getRightSpinVelocity());
+        launchController.updateCurrentState(currentPosition, velocity, getLeftVelocity(), getRightVelocity());
         updateEncoders();
     }
 
     // Initialize all motors not part of drivetrain
     public void initMotors() {
-        leftSpin = op.hardwareMap.get(DcMotorEx.class, "shootLeft");
-        rightSpin = op.hardwareMap.get(DcMotorEx.class, "shootRight");
+        left = op.hardwareMap.get(DcMotorEx.class, "shootLeft");
+        right = op.hardwareMap.get(DcMotorEx.class, "shootRight");
         conveyor = op.hardwareMap.get(DcMotor.class, "conveyor");
         intake = op.hardwareMap.get(DcMotor.class, "intake");
         
-        leftSpin.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightSpin.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         conveyor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         
-        leftSpin.setDirection(MLDIR);
-        rightSpin.setDirection(MRDIR);
+        left.setDirection(MLDIR);
+        right.setDirection(MRDIR);
         conveyor.setDirection(CONVEYDIR);
         intake.setDirection(INDIR);
         
-        leftSpin.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        rightSpin.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         conveyor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
@@ -74,51 +74,58 @@ public class LaunchBot extends Bot {
     // Update current and last encoder positions
     public void updateEncoders() {
         super.updateEncoders();
-        leftSpinPosPrev = leftSpinPos;
-        rightSpinPosPrev = rightSpinPos;
+        leftPosPrev = leftPos;
+        rightPosPrev = rightPos;
 
-        leftSpinPos = leftSpin.getCurrentPosition();
-        rightSpinPos = rightSpin.getCurrentPosition();
+        leftPos = left.getCurrentPosition();
+        rightPos = right.getCurrentPosition();
     }
 
     // Resetting encoders to 0, keeping current mode
     public void resetEncoders() {
         super.resetEncoders(); //calling Bot.resetEncoders()
-        DcMotorEx.RunMode leftSpinMode = leftSpin.getMode();
-        DcMotorEx.RunMode rightSpinMode = rightSpin.getMode();
+        DcMotorEx.RunMode leftMode = left.getMode();
+        DcMotorEx.RunMode rightMode = right.getMode();
 
-        leftSpin.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightSpin.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        leftSpin.setMode(leftSpinMode);
-        rightSpin.setMode(rightSpinMode);
+        left.setMode(leftMode);
+        right.setMode(rightMode);
     }
 
     // Getters
-    public int getLeftSpinPos()          { return leftSpinPos; }
-    public int getRightSpinPos()         { return rightSpinPos; }
-    public double getLeftSpinVelocity()  { return leftSpin.getVelocity(); }
-    public double getRightSpinVelocity() { return rightSpin.getVelocity(); }
+    public int getLeftPos()          { return leftPos; }
+    public int getRightPos()         { return rightPos; }
+    public double getLeftVelocity()  { return left.getVelocity(); }
+    public double getRightVelocity() { return right.getVelocity(); }
 
     // Setters
-    public void setLeftSpinPower(double power)        { leftSpin.setPower(power); }
-    public void setRightSpinPower(double power)       { rightSpin.setPower(power); }
-    public void setLeftSpinVelocity(double velocity)  { leftSpin.setVelocity(velocity); }
-    public void setRightSpinVelocity(double velocity) { rightSpin.setVelocity(velocity); }
+    public void setLeftPower(double power)        { left.setPower(power); }
+    public void setRightPower(double power)       { right.setPower(power); }
+    public void setLeftVelocity(double velocity)  { left.setVelocity(velocity); }
+    public void setRightVelocity(double velocity) { right.setVelocity(velocity); }
 
     public void setConveyorPower(double power)        { conveyor.setPower(power); }
     public void setIntakePower(double power)          { intake.setPower(power); }
     public void setKickerPosition(double position)    { kicker.setPosition(position); }
 
     public void setIntakeDirection(DcMotor.Direction dir) { intake.setDirection(dir); }
-
-    public void setLaunchControllerMode(LaunchController.LaunchMode mode) {
-        launchController.setLaunchMode(mode);
-    }
+    
 
     public void setLaunchControllerTarget(Pose2D target) {
         launchController.setLaunchTarget(target);
     }
+    
+    public void setLaunchControllerAimMode(LaunchController.LaunchMode mode) {
+        launchController.setAimMode(mode);
+    }
+    
+    public void setLaunchControllerPowerMode(LaunchController.LaunchMode mode) {
+        launchController.setPowerMode(mode);
+    }
+    
+    public boolean launchReady() { return launchController.launchReady(); }
 
     // Deal with threads
     public void startMultiThread() { launchThread.start(); }

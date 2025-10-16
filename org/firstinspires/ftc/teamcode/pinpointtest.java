@@ -45,7 +45,7 @@ public class pinpointtest extends LinearOpMode {
         pinpoint.update();
         Pose2D pose2D = pinpoint.getPosition();
         
-        bot.driveXYW(-gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
+        bot.driveFieldXYW(-gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
 
         telemetry.addData("X coordinate (IN)", pose2D.getX(DistanceUnit.INCH));
         telemetry.addData("Y coordinate (IN)", pose2D.getY(DistanceUnit.INCH));

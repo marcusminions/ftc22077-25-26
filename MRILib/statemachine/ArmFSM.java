@@ -22,6 +22,7 @@
 package MRILib.statemachine;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import java.util.HashMap;
 import MRILib.managers.*;
@@ -56,7 +57,7 @@ public class ArmFSM {
     Bpad gpad1;
     Bpad gpad2;
     
-    boolean auton;
+    public boolean auton;
     
     Telemetry telemetry;
 
@@ -136,19 +137,6 @@ public class ArmFSM {
         }
     }
 
-    // public void setState(String name) {
-    //     setState(ArmState.getState(name));
-    // }
-
-    // // Setting currentState to another saved state
-    // public void setState(ArmState state) { 
-    //     if(state!=currentState && !state.toString().equals("TO_"+currentState.toString())) {
-    //         currentState.end();
-    //         currentState = state;
-    //         state.start();
-    //     }
-    // }
-
     /*
      * Checks all transition conditions and transitions to the first valid target state.
      * Parallels are like conditions but they don't end the current state
@@ -200,36 +188,52 @@ public class ArmFSM {
 
         // Add mutually exclusive states
         exclusiveStates.add(new String[] {
-            "DEFAULT", "AIM", "POWER", "FIRE"
+            "DEFAULT", "POWER"
         });
 
         // DEFAULT STATE
         new ArmState("DEFAULT") {
             @Override
             void update() {
-                bot.setLaunchControllerMode(LaunchMode.OFF);
+                bot.setLaunchControllerAimMode(LaunchMode.OFF);
+                bot.setLaunchControllerPowerMode(LaunchMode.OFF);
             }
         };
-
-        new ArmState("AIM") {
+        
+        new ArmState("KICK") {
+            ElapsedTime timer = new ElapsedTime();
+            boolean kicked = false;
+            double kickTime = 10;
+            
             @Override
             void update() {
-                bot.setLaunchControllerMode(LaunchMode.AIM);
+                if (!kicked) {
+                    bot.setKickerPosition(KICK);
+                    kickTime = KICK_TIME;
+                    kicked = true;
+                } else if (timer.seconds() > kickTime - KICK_TIME + 1) {
+                    bot.setKickerPosition(BACK);
+                }
             }
-        };
-
-        new ArmState("POWER") {
+            
             @Override
-            void update() {
-                bot.setLaunchControllerMode(LaunchMode.POWER);
-            }
+            void end() { inventory.remove(0); }
         };
-
+        
         new ArmState("FIRE") {
             @Override
             void update() {
-                bot.setLaunchControllerMode(LaunchMode.FIRE);
+                bot.setLaunchControllerPowerMode(LaunchMode.POWER);
+                
+                if (auton) {
+                    bot.setLaunchControllerAimMode(LaunchMode.AIM);
+                    setTransition("P-END", inventory.size() < 1);
+                    setParallel("KICK", bot.launchReady());
+                }
             }
+            
+            @Override
+            void end() { bot.setLaunchControllerPowerMode(LaunchMode.OFF); }
         };
 
         // Permanent states, usually logic for setting globals that isn't handled by broadcasts, start every name with P-
@@ -248,10 +252,10 @@ public class ArmFSM {
         };
 
         // Controls all logic and controls for teleop
-        new ArmState("P-TELEOP") {
+        new ArmState("P-CONTROLS") {
             @Override
             void update() {
-
+                
             }
         };
 
