@@ -41,6 +41,7 @@ public class GameValues {
     public static double KICK = 1;  // Kicker servo positions
     public static double BACK = 0;
     public static double KICK_TIME;
+    public static int DEFAULT_LAUNCH_MODIFIDER = 0;
 
     // Hopefully linear value that will translate velocity of motors using motor.setVelocity()
     // to release velocity of the ball in meters per second.

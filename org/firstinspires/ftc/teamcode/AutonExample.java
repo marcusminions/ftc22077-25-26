@@ -49,8 +49,8 @@ public class AutonExample extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        // Setup for auto
-        SIDE side = SIDE.NONE;
+        // Setup for auto, defaults to red (50% chance of being correct?)
+        SIDE side = SIDE.RED;
         int reflection = 0;  // ALL positions are just reflected across x axis, right?
 
         Pose2D redTarget = new Pose2D(DistanceUnit.INCH, -65, 65, AngleUnit.DEGREES, 0);
@@ -60,7 +60,10 @@ public class AutonExample extends LinearOpMode {
         while (opModeInInit()) {
             if (gamepad1.a) { side = SIDE.RED; }
             if (gamepad1.b) { side = SIDE.BLUE; }
+            telemetry.addData("Side", side == SIDE.BLUE ? "BLUE" : "RED");
+            telemetry.update();
         }
+
         waitForStart();
         
         // Side specific
@@ -94,6 +97,7 @@ public class AutonExample extends LinearOpMode {
 
         dsm.start();
         asm.start();
+        bot.startMultiThread();
         
         // Main loop
         while (opModeIsActive()) {
@@ -115,5 +119,7 @@ public class AutonExample extends LinearOpMode {
             telemetry.addData("Heading", -bot.getHeading());
             telemetry.update();
         }
+
+        bot.stopMultiThread();
     }
 }

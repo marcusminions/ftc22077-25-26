@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 import static MRILib.BotValues.*;
+import static MRILib.GameValues.DEFAULT_LAUNCH_MODIFIDER;
 
 public class LaunchBot extends Bot {
 
@@ -24,6 +25,9 @@ public class LaunchBot extends Bot {
     public int rightPos;
     public int leftPosPrev;
     public int rightPosPrev;
+
+    public int launchModifier;
+    public int lastLaunchModifier;
     
     public LaunchBot (LinearOpMode op) {
         super(op);
@@ -103,8 +107,8 @@ public class LaunchBot extends Bot {
     // Setters
     public void setLeftPower(double power)        { left.setPower(power); }
     public void setRightPower(double power)       { right.setPower(power); }
-    public void setLeftVelocity(double velocity)  { left.setVelocity(velocity); }
-    public void setRightVelocity(double velocity) { right.setVelocity(velocity); }
+    public void setLeftVelocity(double velocity)  { left.setVelocity(velocity + launchModifier); }
+    public void setRightVelocity(double velocity) { right.setVelocity(velocity + launchModifier); }
 
     public void setConveyorPower(double power)        { conveyor.setPower(power); }
     public void setIntakePower(double power)          { intake.setPower(power); }
@@ -112,6 +116,12 @@ public class LaunchBot extends Bot {
 
     public void setIntakeDirection(DcMotor.Direction dir) { intake.setDirection(dir); }
     
+    public void changeLaunchModifier(int velocity) { launchModifier += velocity; }
+    public void undoLaunchModifier() { launchModifier = lastLaunchModifier; }
+    public void resetLaunchModifier()  { 
+        lastLaunchModifier = launchModifier == DEFAULT_LAUNCH_MODIFIDER ? lastLaunchModifier : launchModifier;
+        launchModifier = DEFAULT_LAUNCH_MODIFIDER;
+    }
 
     public void setLaunchControllerTarget(Pose2D target) {
         launchController.setLaunchTarget(target);

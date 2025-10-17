@@ -137,6 +137,15 @@ public class ArmFSM {
         }
     }
 
+    // Check if state is in currentStates
+    public boolean containsState(String name) {
+        return containsState(ArmState.getState(name));
+    }
+
+    public boolean containsState(ArmState state) {
+        return currentStates.contains(state);
+    }
+
     /*
      * Checks all transition conditions and transitions to the first valid target state.
      * Parallels are like conditions but they don't end the current state
@@ -207,9 +216,10 @@ public class ArmFSM {
             
             @Override
             void update() {
+                setTransition("P-END", kicked && timer.seconds() > kickTime);
                 if (!kicked) {
                     bot.setKickerPosition(KICK);
-                    kickTime = KICK_TIME;
+                    kickTime = timer.time() + KICK_TIME;
                     kicked = true;
                 } else if (timer.seconds() > kickTime - KICK_TIME + 1) {
                     bot.setKickerPosition(BACK);
@@ -248,14 +258,6 @@ public class ArmFSM {
                 } else {
                     inLaunchZone = false;
                 }
-            }
-        };
-
-        // Controls all logic and controls for teleop
-        new ArmState("P-CONTROLS") {
-            @Override
-            void update() {
-                
             }
         };
 
