@@ -35,13 +35,16 @@ public class GameValues {
 
     // Robot Constants
     public static final double WIDTH = 12;
-    public static final double LENGTH = 16d;
+    public static final double LENGTH = 15d;
+    public static final int INVENTORY_SIZE = 2;
 
     // Launch related constants
     public static double KICK = 1;  // Kicker servo positions
     public static double BACK = 0;
-    public static double KICK_TIME;
+    public static double KICK_TIME = 2;
     public static int DEFAULT_LAUNCH_MODIFIDER = 0;
+    public static double RAMP_POWER = 1;
+    public static double INTAKE_POWER = .7;
 
     // Hopefully linear value that will translate velocity of motors using motor.setVelocity()
     // to release velocity of the ball in meters per second.

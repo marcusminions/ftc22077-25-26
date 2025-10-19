@@ -14,6 +14,7 @@ import MRILib.motion.PIDController;
 import MRILib.statemachine.*;
 import MRILib.util.*;
 import static MRILib.BotValues.*;
+import static MRILib.GameValues.*;
 
 
 @TeleOp(name = "Example Teleop (will become ATeleop)")
@@ -26,8 +27,6 @@ public class TeleopExample extends LinearOpMode {
 
     public Bpad gpad1;
     public Bpad gpad2;
-
-    public enum SIDE { RED, BLUE, NONE }
 
     @Override
     public void runOpMode() {
@@ -49,14 +48,14 @@ public class TeleopExample extends LinearOpMode {
         pid.setTurnPID(thetaPid);
         
         // Setup side for teleop so aiming is correct, default to red
-        SIDE side = SIDE.RED;
+        COLOR side = COLOR.RED;
         boolean debug = false;
         
         while (opModeInInit()) {
             if (gamepad1.start && gamepad1.back) { debug = true; }
-            if (gamepad1.dpad_left) { side = SIDE.RED; }
-            if (gamepad1.dpad_right) { side = SIDE.BLUE; }
-            telemetry.addData("Side", side == SIDE.BLUE ? "BLUE" : "RED");
+            if (gamepad1.dpad_left) { side = COLOR.RED; }
+            if (gamepad1.dpad_right) { side = COLOR.BLUE; }
+            telemetry.addData("Side", side == COLOR.BLUE ? "BLUE" : "RED");
             telemetry.update();
         }
 
@@ -78,8 +77,13 @@ public class TeleopExample extends LinearOpMode {
             if(gamepad2!=null) gpad2.update(gamepad2);
 
             // _________ CONTROLS _________
-            // Driving
+            // Utility
+            if (gpad1.get("start") && gpad1.get("dpad_left")) { side = COLOR.RED; calculateTarget(side); }
+            if (gpad2.get("start") && gpad2.get("dpad_left")) { side = COLOR.RED; calculateTarget(side); }
+            if (gpad1.get("start") && gpad1.get("dpad_right")) { side = COLOR.BLUE; calculateTarget(side); }
+            if (gpad2.get("start") && gpad2.get("dpad_right")) { side = COLOR.BLUE; calculateTarget(side); }
 
+            // Driving
             double dx = gamepad1.left_stick_x;
             double dy = gamepad1.left_stick_y;
             double angle;
@@ -99,11 +103,11 @@ public class TeleopExample extends LinearOpMode {
             bot.driveFieldXYW(dx, dy, dw);
 
             if (gpad1.get("start") && gpad1.get("dpad_left")) { // Side changing
-                side = SIDE.RED;
+                side = COLOR.RED;
                 calculateTarget(side);
             }
             if (gpad1.get("start") && gpad1.get("dpad_right")) { // Side changing
-                side = SIDE.BLUE;
+                side = COLOR.BLUE;
                 calculateTarget(side);
             }
 
@@ -111,14 +115,16 @@ public class TeleopExample extends LinearOpMode {
             if (gpad2.get("right_trigger")) asm.addState("FIRE"); // Powering wheels
             else asm.end("FIRE");
 
+            if (bot.launchReady()) gamepad2.rumble(75); // Feedback if able to kick
+
             if (gpad2.get("left_trigger")) { // Firing artifacts
                 if (gpad2.get("left_bumper") || bot.launchReady()) {
                     asm.addState("KICK");
             }}
 
             if (gpad2.get("db_right_bumper")) { // Intake
-                if (asm.containsState("INTAKE")) asm.addState("INTAKE");
-                else asm.end("INTAKE");
+                if (asm.containsState("INTAKE")) asm.end("INTAKE");
+                else asm.addState("INTAKE");
             }
 
             if (gpad2.get("db_dpad_up")) bot.changeLaunchModifier(25); // Adjusting launch velocity
@@ -127,34 +133,33 @@ public class TeleopExample extends LinearOpMode {
             if (gpad2.get("db_dpad_right")) bot.undoLaunchModifier();
 
             // _________ TELEMETRY _________
+            telemetry.addData("Heading", -bot.getHeading());
+            telemetry.addData("Side", side);
+            telemetry.addLine("-----------------------");
+            telemetry.addData("Left velocity", bot.getLeftVelocity());
+            telemetry.addData("Right velocity", bot.getRightVelocity());
 
             Pose2D currentPos = bot.getPosition();
             if (debug) {
-                telemetry.addLine();
+                telemetry.addLine("--------DEBUG--------");
                 telemetry.addData("Current x", currentPos.getX(DistanceUnit.INCH));
                 telemetry.addData("Current y", currentPos.getY(DistanceUnit.INCH));
-                telemetry.addData("Heading", -bot.getHeading());
             }
 
             telemetry.update();
         }
     }
 
-    Pose2D calculateTarget(SIDE s) {
+    Pose2D calculateTarget(COLOR s) {
         Pose2D redTarget = new Pose2D(DistanceUnit.INCH, -65, 65, AngleUnit.DEGREES, 0);
         Pose2D blueTarget = new Pose2D(DistanceUnit.INCH, -65, -65, AngleUnit.DEGREES, 0);
 
-        switch (s) {
-        case NONE:
-            return redTarget;
-        case RED:
-            bot.setLaunchControllerTarget(redTarget);
-            return redTarget;
-        case BLUE:
+        if (s == COLOR.BLUE) {
             bot.setLaunchControllerTarget(blueTarget);
             return blueTarget;
+        } else {
+            bot.setLaunchControllerTarget(redTarget);
+            return redTarget;
         }
-
-        return redTarget;
     }
 }

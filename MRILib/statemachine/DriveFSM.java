@@ -164,10 +164,19 @@ public class DriveFSM
         { // Overriding botstate with wait logic
             ElapsedTime timer;
 
+            AtomicReference<Double> tAngle = new AtomicReference<Double>(999D);
+            void detectOverrideAngle(BotEvent event) {
+                if (event.override) tAngle.set(event.angle);
+                else tAngle.set(999D);
+            }
+
             @Override
             void start(){
                 // Running parallel arm command
                 if(command!=null)command.run();
+
+                // Subscribe to overriding of angle
+                BotEventManager.subscribe(EventType.OVERRIDE_DIRECTION, event -> detectOverrideAngle(event));
 
                 // Setting pid target to the last target
                 //pid.moveTo(lastX,lastY,lastAngle);
@@ -178,7 +187,13 @@ public class DriveFSM
             void update(){
                 // Updating pid to move back to rest position if pushed out of it
                 //pid.update();
-                bot.driveXYW(0,0,0);
+
+                // Sit still unless overriding angle
+                if (tAngle.get() == 999D) bot.driveXYW(0, 0, 0);
+                else {
+                    pid.setAngle(tAngle.get());
+                    pid.update();
+                }
 
                 // Moving to next state if wait value has elapsed
                 if(timer.seconds() > seconds) nextState();

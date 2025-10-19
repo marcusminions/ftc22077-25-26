@@ -54,12 +54,13 @@ public class Bot {
     //creating voltage sensor object
     private VoltageSensor voltageSensor;
 
+    // These are volatile because used by LaunchController
     //current and last position, calculated by the odometry computer
-    public Pose2D currentPosition;
-    public Pose2D lastPosition;
+    public volatile Pose2D currentPosition;
+    public volatile Pose2D lastPosition;
 
     //current velocity calculated from current and last positions
-    public Pose2D velocity;
+    public volatile Pose2D velocity;
     
     protected LinearOpMode op;
     

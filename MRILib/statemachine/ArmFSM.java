@@ -37,6 +37,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 import MRILib.eventlistener.BotEventManager.*;
 import MRILib.eventlistener.BotEventManager;
+import MRILib.GameValues.COLOR;
 import MRILib.eventlistener.BotEvent;
 
 import static MRILib.GameValues.*;
@@ -62,12 +63,12 @@ public class ArmFSM {
     Telemetry telemetry;
 
     // Global variables
-    boolean inLaunchZone = false;
-    List<COLOR> inventory = new ArrayList<>();
+    public boolean inLaunchZone = false;
+    public List<COLOR> inventory = new ArrayList<>();
 
     // Miscellaneous functions
     void detectIntake(BotEvent event) {
-        if (inventory.size() > 2) inventory.remove(0);
+        if (inventory.size() > INVENTORY_SIZE - 1) inventory.remove(0);
         inventory.add(event.color);
     }
 
@@ -197,7 +198,7 @@ public class ArmFSM {
 
         // Add mutually exclusive states
         exclusiveStates.add(new String[] {
-            "DEFAULT", "POWER"
+            "DEFAULT", "POWER, FIRE"
         });
 
         // DEFAULT STATE
@@ -205,6 +206,37 @@ public class ArmFSM {
             @Override
             void update() {
                 bot.setLaunchControllerAimMode(LaunchMode.OFF);
+                bot.setLaunchControllerPowerMode(LaunchMode.OFF);
+
+                bot.setConveyorPower(0);
+            }
+        };
+
+        new ArmState("INTAKE") {
+            @Override
+            void start() { 
+                bot.setIntakePower(INTAKE_POWER);
+                bot.setConveyorPower(RAMP_POWER);
+
+                // Placeholder
+                BotEventManager.broadcast(EventType.INTAKE, new BotEvent(){
+                    public COLOR color = COLOR.PURPLE;
+                });
+                BotEventManager.broadcast(EventType.INTAKE, new BotEvent(){
+                    public COLOR color = COLOR.PURPLE;
+                });
+            }
+
+            @Override
+            void end() { 
+                bot.setIntakePower(0);
+                bot.setConveyorPower(0);
+            }
+        };
+
+        new ArmState("POWER") {
+            @Override
+            void update() {
                 bot.setLaunchControllerPowerMode(LaunchMode.OFF);
             }
         };
@@ -221,24 +253,26 @@ public class ArmFSM {
                     bot.setKickerPosition(KICK);
                     kickTime = timer.time() + KICK_TIME;
                     kicked = true;
+
+                    BotEventManager.broadcast(EventType.LAUNCH, new BotEvent(){ 
+                        public COLOR color = inventory.get(0);
+                    });
                 } else if (timer.seconds() > kickTime - KICK_TIME + 1) {
                     bot.setKickerPosition(BACK);
                 }
             }
-            
-            @Override
-            void end() { inventory.remove(0); }
         };
         
         new ArmState("FIRE") {
             @Override
             void update() {
                 bot.setLaunchControllerPowerMode(LaunchMode.POWER);
+                bot.setConveyorPower(RAMP_POWER);
                 
                 if (auton) {
                     bot.setLaunchControllerAimMode(LaunchMode.AIM);
-                    setTransition("P-END", inventory.size() < 1);
-                    setParallel("KICK", bot.launchReady());
+                    setTransition("DEFAULT", inventory.size() < 1);
+                    setParallel("KICK", bot.launchReady() && inLaunchZone);
                 }
             }
             

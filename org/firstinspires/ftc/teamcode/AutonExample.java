@@ -1,9 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
 import static MRILib.BotValues.*;
+import static MRILib.GameValues.*;
+
+import MRILib.GameValues.COLOR;
 import MRILib.managers.*;
 import MRILib.motion.*;
 import MRILib.statemachine.*;
+import MRILib.util.Bpad;
+
 import java.util.*;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -23,7 +28,8 @@ public class AutonExample extends LinearOpMode {
     public DriveFSM dsm;
     public ArmFSM asm;
 
-    public enum SIDE { RED, BLUE, NONE }
+    public Bpad gpad1;
+    public Bpad gpad2;
 
     @Override
     public void runOpMode() {
@@ -50,31 +56,35 @@ public class AutonExample extends LinearOpMode {
         telemetry.update();
 
         // Setup for auto, defaults to red (50% chance of being correct?)
-        SIDE side = SIDE.RED;
+        COLOR side = COLOR.RED;
         int reflection = 0;  // ALL positions are just reflected across x axis, right?
 
         Pose2D redTarget = new Pose2D(DistanceUnit.INCH, -65, 65, AngleUnit.DEGREES, 0);
         Pose2D blueTarget = new Pose2D(DistanceUnit.INCH, -65, -65, AngleUnit.DEGREES, 0);
 
         // ADD CONTROLLER SETTINGS HERE
+        double startDelay = 0;
         while (opModeInInit()) {
-            if (gamepad1.a) { side = SIDE.RED; }
-            if (gamepad1.b) { side = SIDE.BLUE; }
-            telemetry.addData("Side", side == SIDE.BLUE ? "BLUE" : "RED");
+            gpad1.update(gamepad1);
+            gpad2.update(gamepad2);
+
+            if (gpad1.get("a") || gpad2.get("a")) side = COLOR.RED;
+            if (gpad1.get("b") || gpad2.get("b")) side = COLOR.BLUE;
+
+            if (gpad1.get("db_dpad_left") || gpad2.get("db_dpad_left")) startDelay = startDelay == 0 ? 0 : startDelay + 1;
+            if (gpad1.get("db_dpad_right") || gpad2.get("db_dpad_right")) startDelay += 1;
+
+            telemetry.addData("Side", side == COLOR.BLUE ? "BLUE" : "RED");
+            telemetry.addData("Start Delay", startDelay);
             telemetry.update();
         }
-
+        
         waitForStart();
         
-        // Side specific
-        switch (side) {
-        case NONE:
-            // End program
-            break;
-        case RED:
+        if (side == COLOR.RED) {
             reflection = 1;
             bot.setLaunchControllerTarget(redTarget);
-        case BLUE:
+        } else {
             reflection = 1;
             bot.setLaunchControllerTarget(blueTarget);
         }
@@ -84,15 +94,20 @@ public class AutonExample extends LinearOpMode {
         Pose2D farLaunch = new Pose2D(DistanceUnit.INCH, 63, -12 * reflection, AngleUnit.DEGREES, -180 * reflection);
         Pose2D rightBallTop = new Pose2D(DistanceUnit.INCH, 36, -33 * reflection, AngleUnit.DEGREES, -90 * reflection);
 
+        // Configure state machine variables
+        asm.inventory.add(COLOR.PURPLE);
+        asm.inventory.add(COLOR.PURPLE);
+        asm.auton = true;
+        
         // Add permanent states
         asm.addState("P-LAUNCHZONE");
 
         bot.setPosition(startPos); 
-        dsm.moveTo(startPos).run(() ->
-        asm.addState("PREFIRE"));
+        dsm.waitForSeconds(startDelay);
+        dsm.waitForSeconds(5).run(() ->
+        asm.addState("POWER"));
         dsm.moveTo(farLaunch).run(() ->
         asm.addState("FIRE"));
-
         dsm.waitForSeconds(30);
 
         dsm.start();

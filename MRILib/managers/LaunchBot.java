@@ -23,6 +23,8 @@ public class LaunchBot extends Bot {
 
     public int leftPos;
     public int rightPos;
+    public volatile double leftVel;
+    public volatile double rightVel;
     public int leftPosPrev;
     public int rightPosPrev;
 
@@ -83,6 +85,9 @@ public class LaunchBot extends Bot {
 
         leftPos = left.getCurrentPosition();
         rightPos = right.getCurrentPosition();
+
+        leftVel = left.getVelocity();
+        rightVel = right.getVelocity();
     }
 
     // Resetting encoders to 0, keeping current mode
@@ -101,8 +106,8 @@ public class LaunchBot extends Bot {
     // Getters
     public int getLeftPos()          { return leftPos; }
     public int getRightPos()         { return rightPos; }
-    public double getLeftVelocity()  { return left.getVelocity(); }
-    public double getRightVelocity() { return right.getVelocity(); }
+    public double getLeftVelocity()  { return leftVel; }
+    public double getRightVelocity() { return rightVel; }
 
     // Setters
     public void setLeftPower(double power)        { left.setPower(power); }
