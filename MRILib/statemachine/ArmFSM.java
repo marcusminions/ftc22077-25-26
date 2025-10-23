@@ -107,7 +107,9 @@ public class ArmFSM {
 
     // Runs every repeat loop on the main thread
     public void update() {
-        for (ArmState state : currentStates) {
+        List<ArmState> copyStates = new ArrayList<>();
+        for (ArmState state : currentStates) copyStates.add(state);
+        for (ArmState state : copyStates) {
             state.update();
             transition(state);
             checkExclusivity(state);
@@ -180,7 +182,12 @@ public class ArmFSM {
         for (String[] mutual : exclusiveStates) {
             if (Arrays.asList(mutual).contains(state.name)) {
                 for (ArmState c : currentStates) {
-                    if (Arrays.asList(mutual).contains(c.name) && currentStates.indexOf(c) > currentStates.indexOf(state)) {
+                    if (state.name == "DEFAULT") {
+                        // telemetry.addData(state.name, Arrays.asList(mutual).contains("FIRE"));
+                        // telemetry.addData(state.name, currentStates.indexOf(c));
+                        // telemetry.addData(state.name, Arrays.asList(mutual));
+                    };
+                    if (c.name != state.name && Arrays.asList(mutual).contains(c.name) && currentStates.indexOf(c) > currentStates.indexOf(state.name)) {
                         remove = true;
                     }
                 }
@@ -188,7 +195,7 @@ public class ArmFSM {
         }
 
         // If marked for removal, end the state
-        if (remove) state.end();
+        if (remove) end(state);
     }
 
     private void init() {
@@ -198,7 +205,7 @@ public class ArmFSM {
 
         // Add mutually exclusive states
         exclusiveStates.add(new String[] {
-            "DEFAULT", "POWER, FIRE"
+            "DEFAULT", "POWER", "FIRE"
         });
 
         // DEFAULT STATE
@@ -244,7 +251,7 @@ public class ArmFSM {
         new ArmState("KICK") {
             ElapsedTime timer = new ElapsedTime();
             boolean kicked = false;
-            double kickTime = 10;
+            double kickTime = 1;
             
             @Override
             void update() {
@@ -253,7 +260,8 @@ public class ArmFSM {
                     bot.setKickerPosition(KICK);
                     kickTime = timer.time() + KICK_TIME;
                     kicked = true;
-
+                    
+                    if (inventory.size() == 0) inventory.add(COLOR.PURPLE);
                     BotEventManager.broadcast(EventType.LAUNCH, new BotEvent(){ 
                         public COLOR color = inventory.get(0);
                     });
@@ -261,6 +269,9 @@ public class ArmFSM {
                     bot.setKickerPosition(BACK);
                 }
             }
+            
+            @Override
+            void end() { kicked = false; }
         };
         
         new ArmState("FIRE") {
@@ -277,7 +288,10 @@ public class ArmFSM {
             }
             
             @Override
-            void end() { bot.setLaunchControllerPowerMode(LaunchMode.OFF); }
+            void end() {
+                bot.setLaunchControllerPowerMode(LaunchMode.OFF);
+                bot.setConveyorPower(0);
+            }
         };
 
         // Permanent states, usually logic for setting globals that isn't handled by broadcasts, start every name with P-

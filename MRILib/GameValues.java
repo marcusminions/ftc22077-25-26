@@ -39,8 +39,8 @@ public class GameValues {
     public static final int INVENTORY_SIZE = 2;
 
     // Launch related constants
-    public static double KICK = 1;  // Kicker servo positions
-    public static double BACK = 0;
+    public static double KICK = .0;  // Kicker servo positions
+    public static double BACK = .10;
     public static double KICK_TIME = 2;
     public static int DEFAULT_LAUNCH_MODIFIDER = 0;
     public static double RAMP_POWER = 1;

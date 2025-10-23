@@ -25,14 +25,18 @@ public class TeleopExample extends LinearOpMode {
     public DriveFSM dsm;
     public ArmFSM asm;
 
-    public Bpad gpad1;
-    public Bpad gpad2;
+    private Bpad gpad1;
+    private Bpad gpad2;
 
     @Override
     public void runOpMode() {
 
         // _________ INITIALIZATION _________
+        gpad1 = new Bpad();
+        gpad2 = new Bpad();
+        
         bot = new LaunchBot(this);
+        asm = new ArmFSM(bot, gpad1, gpad2, telemetry);
 
         bot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bot.enableBrakeMode(true);
@@ -40,15 +44,20 @@ public class TeleopExample extends LinearOpMode {
         PID xPid = new PID(.7, .08, .02);
         PID yPid = new PID(.8, .08, .02);  // Something about friction for pDy > pDx
         PID thetaPid = new PID(1.5, .98, .09);
-        PID drivingThetaPid = new PID(1.5, 0, .09);
+        PID drivingThetaPid = new PID(.014, 0, .0014);
         thetaPid.errorSumTotal = .1;
+        drivingThetaPid.isAngle = true;
 
         pid = new PIDController(bot, telemetry);
         pid.setPID(xPid, yPid);
         pid.setTurnPID(thetaPid);
         
+        dsm = new DriveFSM(bot, pid, telemetry);
+        
         // Setup side for teleop so aiming is correct, default to red
         COLOR side = COLOR.RED;
+        
+        double angle = 0;
         boolean debug = false;
         
         while (opModeInInit()) {
@@ -68,7 +77,16 @@ public class TeleopExample extends LinearOpMode {
         bot.startMultiThread();
         drivingThetaPid.start();
         calculateTarget(side);
-
+        
+        // _________ CREATE OTHER VARIABLES _________
+        boolean lastGpadX = false;
+        boolean lastGpadA = false;
+        boolean lastGpadB = false;
+        
+        boolean flyWheelToggle = false;
+        boolean intakeToggle = false;
+        boolean beltToggle = false;
+        
         // _________ MAIN LOOP _________
         while (opModeIsActive()) {
             bot.update();
@@ -84,37 +102,43 @@ public class TeleopExample extends LinearOpMode {
             if (gpad2.get("start") && gpad2.get("dpad_right")) { side = COLOR.BLUE; calculateTarget(side); }
 
             // Driving
-            double dx = gamepad1.left_stick_x;
-            double dy = gamepad1.left_stick_y;
-            double angle;
+            double dx = gamepad1.left_stick_y;
+            double dy = gamepad1.left_stick_x;
             if (gpad1.get("x")) { // Override steering
                 Pose2D target = calculateTarget(side);
                 double x = target.getX(DistanceUnit.INCH) - bot.getX();
                 double y = target.getY(DistanceUnit.INCH) - bot.getY();
-                angle = Math.atan2(dy, dx);
+                angle = Math.atan2(y, x) * 180 / Math.PI;
             } else { // Standard fieldcentric steering
-                double x = gamepad1.right_stick_x;
-                double y = -gamepad1.right_stick_y;
-                angle = Math.atan2(dy, dx);
+                double x = -gamepad1.right_stick_x;
+                double y = gamepad1.right_stick_y;
+                if (Math.sqrt(x*x + y*y) > .8) angle = Math.atan2(x, y) * 180 / Math.PI;
             }
 
             drivingThetaPid.setTarget(angle);
             double dw = drivingThetaPid.update(bot.getHeading());
             bot.driveFieldXYW(dx, dy, dw);
-
-            if (gpad1.get("start") && gpad1.get("dpad_left")) { // Side changing
-                side = COLOR.RED;
-                calculateTarget(side);
-            }
-            if (gpad1.get("start") && gpad1.get("dpad_right")) { // Side changing
-                side = COLOR.BLUE;
-                calculateTarget(side);
-            }
+            
+            if (gpad1.get("start") && gpad1.get("dpad_up")) bot.resetHeading();
 
             // Gunning
-            if (gpad2.get("right_trigger")) asm.addState("FIRE"); // Powering wheels
-            else asm.end("FIRE");
-
+            // b belt, a intake, make flywheels brake
+            // lt turns on flywheels power to trigger, x is flywheel safety toggle
+            // kicker is default open (back) lb kicks forward when held
+            // dpad left is reverse intake, dpad up/down intake power .2, right dpad resets
+            if (gamepad2.x && !lastGpadX) flyWheelToggle = !flyWheelToggle;
+            if (gamepad2.a && !lastGpadA) intakeToggle = !intakeToggle;
+            if (gamepad2.b && !lastGpadB) beltToggle = !beltToggle;
+            
+            if (intakeToggle) bot.setIntakePower(1);
+            
+            if (flyWheelToggle) {
+                bot.setLeftPower(gamepad2.left_trigger);
+                bot.setRightPower(gamepad2.left_trigger);
+            }
+            
+            // if (gamepad1)
+            
             if (bot.launchReady()) gamepad2.rumble(75); // Feedback if able to kick
 
             if (gpad2.get("left_trigger")) { // Firing artifacts
@@ -131,13 +155,21 @@ public class TeleopExample extends LinearOpMode {
             if (gpad2.get("db_dpad_down")) bot.changeLaunchModifier(-25);
             if (gpad2.get("db_dpad_left")) bot.resetLaunchModifier();
             if (gpad2.get("db_dpad_right")) bot.undoLaunchModifier();
+            
+            // More utility
+            if (gamepad2.x) lastGpadX = true; else lastGpadX = false;
+            if (gamepad2.a) lastGpadA = true; else lastGpadA = false;
+            if (gamepad2.b) lastGpadB = true; else lastGpadB = false;
 
             // _________ TELEMETRY _________
             telemetry.addData("Heading", -bot.getHeading());
+            telemetry.addData("Angle", angle);
             telemetry.addData("Side", side);
             telemetry.addLine("-----------------------");
             telemetry.addData("Left velocity", bot.getLeftVelocity());
             telemetry.addData("Right velocity", bot.getRightVelocity());
+            telemetry.addLine("-----------------------");
+            telemetry.addData("States", asm.currentStates);
 
             Pose2D currentPos = bot.getPosition();
             if (debug) {

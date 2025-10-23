@@ -68,7 +68,7 @@ public class LimelightNeuralDetection extends LinearOpMode {
         limelight.start();
 
         telemetry.setMsTransmissionInterval(50);
-        telemetry.addLine("NiggaTech Booted Up. Ready for Opps");
+        telemetry.addLine("INIT");
         telemetry.update();
 
         waitForStart();

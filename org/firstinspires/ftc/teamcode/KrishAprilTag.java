@@ -56,7 +56,7 @@ public class KrishAprilTag extends LinearOpMode {
     public void runOpMode() { 
         initAprilTag(); 
 
-        telemetry.addData("Status", "NiggaTech Booted"); 
+        telemetry.addData("Status", "On"); 
         telemetry.update(); 
         waitForStart(); 
 

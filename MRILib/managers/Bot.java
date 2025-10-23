@@ -46,6 +46,8 @@ public class Bot {
     
     //creating odometry computer to be initialized in initOdo()
     public GoBildaPinpointDriver odo;
+    
+    double angleOffset = 0d;
 
     //creating on-board IMU to be initialized in initIMU()
     public IMU imu;
@@ -215,7 +217,15 @@ public class Bot {
     public double getHeading(){
         // returns the heading value of the current odometry position using 
         // the odometry computer's IMU by default (it seems to be more consistent than the on-board IMU)
-        return -getOdoPosition().getHeading(AngleUnit.DEGREES);
+        double a = getIMUHeading() - angleOffset;
+        if (a > 180) a -= 360;
+        if (a < -180) a += 360;
+        return a;
+    }
+    
+    public void resetHeading() {
+        angleOffset = 0;
+        angleOffset = getHeading();
     }
 
     public synchronized double getVoltage()
@@ -225,10 +235,6 @@ public class Bot {
     
     public Telemetry getTelemetry(){
         return op.telemetry;
-    }
-    
-    public void resetHeading(){
-        setHeading(0);
     }
     
     public void setHeading(double heading){

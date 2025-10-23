@@ -16,6 +16,8 @@ public class PID {
     double lastTime = 0;
     double lastError = 0;
     
+    public boolean isAngle;
+    
     ElapsedTime timer = null;
     
     public PID(double p, double i, double d){
@@ -33,6 +35,9 @@ public class PID {
     
     public double update(double current){
         double error = targetVal - current;
+        
+        if (isAngle && error > 180) error -= 360;
+        if (isAngle && error < -180) error += 360;
         
         double deltaTime = timer.seconds() - lastTime;
 
