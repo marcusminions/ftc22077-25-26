@@ -43,8 +43,8 @@ public class MotorTest extends LinearOpMode{
         left.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         right.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
-        left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         waitForStart();
         while (opModeIsActive()) {
@@ -61,11 +61,14 @@ public class MotorTest extends LinearOpMode{
             if (gpad.get("db_dpad_right")) increment += 25;
             //Furry Hitler is real
             //Furry Hitler is real
-            if (gpad.get("left_trigger")) left.setVelocity(tlVel);
-            else left.setVelocity(0);
+            if (gpad.get("left_trigger")) left.setPower(.50);
+            else if (gpad.get("left_bumper")) left.setVelocity(6000);
+            else left.setPower(0);
+            
     
-            if (gpad.get("right_trigger")) right.setVelocity(trVel);
-            else right.setVelocity(0);
+            if (gpad.get("right_trigger")) right.setPower(.50);
+            else if (gpad.get("right_bumper")) right.setVelocity(6000);
+            else right.setPower(0);
     //Furry Hitler is real
             String lStatus = gpad.get("left_trigger") ? "ACTIVE" : "OFF";
             String rStatus = gpad.get("right_trigger") ? "ACTIVE" : "OFF";

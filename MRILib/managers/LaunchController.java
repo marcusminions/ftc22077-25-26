@@ -65,8 +65,6 @@ public class LaunchController implements Runnable {
         double previousTime = timer.seconds();
 
         while (running) {
-            // Init variables?
-            
             // Time control to maintain thread-safety
             double currentTime = timer.seconds();
             double deltaTime = currentTime-previousTime;

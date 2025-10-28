@@ -52,9 +52,13 @@ public class Bot {
     //creating on-board IMU to be initialized in initIMU()
     public IMU imu;
     private boolean usingIMU;
+    private boolean usingDriveController;
 
     //creating voltage sensor object
     private VoltageSensor voltageSensor;
+
+    private DriveController driveController;
+    private Thread driveThread;
 
     // These are volatile because used by LaunchController
     //current and last position, calculated by the odometry computer
@@ -84,6 +88,8 @@ public class Bot {
         initMotors();
         initIMU();
         initOdo();
+        driveController = new DriveController(this);
+        driveThread = new Thread(driveController);
         voltageSensor = op.hardwareMap.voltageSensor.iterator().next();
     }
 
@@ -350,10 +356,14 @@ public class Bot {
         double rbPower = ((rx - ry - rw) / denom) / voltageMulti;
         
         // applying calculated vector powers to each motor
-        frontLeft.setPower(lfPower);
-        frontRight.setPower(rfPower);
-        backLeft.setPower(lbPower);
-        backRight.setPower(rbPower);
+        if (usingDriveController) {
+            driveController.setPowers(lfPower, rfPower, lbPower, rbPower);
+        } else {
+            frontLeft.setPower(lfPower);
+            frontRight.setPower(rfPower);
+            backLeft.setPower(lbPower);
+            backRight.setPower(rbPower);
+        }
         
         // TESTING ONLY
         // backRight.setPower(.8);
@@ -392,5 +402,25 @@ public class Bot {
         // passing through the rotation value (fw) as rotation around the robot's z axis
         // is unaffected by rotation of the directional power vector
         driveXYW(rx, ry*1.15, fw);
+    }
+
+    // Deal with threading
+    public void enableDriveThread() {
+        usingDriveController = true;
+        startDriveThread();
+    }
+    public void disableDriveThread() {
+        usingDriveController = false;
+        stopDriveThread();
+    }
+
+    public void startDriveThread() { driveThread.start(); }
+    public void stopDriveThread() {
+        driveThread.stop();
+        try {
+            driveThread.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

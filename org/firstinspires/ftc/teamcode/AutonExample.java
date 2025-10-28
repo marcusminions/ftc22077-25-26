@@ -112,7 +112,8 @@ public class AutonExample extends LinearOpMode {
 
         dsm.start();
         asm.start();
-        bot.startMultiThread();
+        bot.startDriveThread();
+        bot.startLaunchThread();
         
         // Main loop
         while (opModeIsActive()) {
@@ -135,6 +136,7 @@ public class AutonExample extends LinearOpMode {
             telemetry.update();
         }
 
-        bot.stopMultiThread();
+        bot.stopDriveThread();
+        bot.stopLaunchThread();
     }
 }

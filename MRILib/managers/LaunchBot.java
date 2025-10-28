@@ -51,11 +51,11 @@ public class LaunchBot extends Bot {
     public void initMotors() {
         left = op.hardwareMap.get(DcMotorEx.class, "shootLeft");
         right = op.hardwareMap.get(DcMotorEx.class, "shootRight");
-        conveyor = op.hardwareMap.get(DcMotor.class, "conveyor");
-        intake = op.hardwareMap.get(DcMotor.class, "intake");
+        conveyor = op.hardwareMap.get(DcMotor.class, "conveyorMotor");
+        intake = op.hardwareMap.get(DcMotor.class, "sweeperMotor");
         
-        left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         conveyor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         
@@ -64,8 +64,8 @@ public class LaunchBot extends Bot {
         conveyor.setDirection(CONVEYDIR);
         intake.setDirection(INDIR);
         
-        left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         conveyor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
@@ -110,7 +110,7 @@ public class LaunchBot extends Bot {
     public double getRightVelocity() { return rightVel; }
 
     // Setters
-    public void setLeftPower(double power)        { left.setPower(power); }
+    public void setLeftPower(double power)        { left.setPower(power); getTelemetry().addData("lp", power); }
     public void setRightPower(double power)       { right.setPower(power); }
     public void setLeftVelocity(double velocity)  { left.setVelocity(velocity + launchModifier); }
     public void setRightVelocity(double velocity) { right.setVelocity(velocity + launchModifier); }
@@ -143,8 +143,8 @@ public class LaunchBot extends Bot {
     public boolean launchReady() { return launchController.launchReady(); }
 
     // Deal with threads
-    public void startMultiThread() { launchThread.start(); }
-    public void stopMultiThread() {
+    public void startLaunchThread() { launchThread.start(); }
+    public void stopLaunchThread() {
         launchController.stop();
         try {
             launchThread.join();
