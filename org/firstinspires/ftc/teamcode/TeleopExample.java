@@ -166,11 +166,6 @@ public class TeleopExample extends LinearOpMode {
             telemetry.addLine("-----------------------");
             telemetry.addData("Left velocity", bot.getLeftVelocity());
             telemetry.addData("Right velocity", bot.getRightVelocity());
-<<<<<<< HEAD
-=======
-            telemetry.addLine("-----------------------");
-            telemetry.addData("last a", flyWheelToggle);
->>>>>>> 3207091c000cf4af74aad82056861208baa10d38
             telemetry.addData("left trigger", gpad2.left_trigger);
             // telemetry.addData("States", asm.currentStates);
 
