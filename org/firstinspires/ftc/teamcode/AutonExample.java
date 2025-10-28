@@ -28,9 +28,6 @@ public class AutonExample extends LinearOpMode {
     public DriveFSM dsm;
     public ArmFSM asm;
 
-    public Bpad gpad1;
-    public Bpad gpad2;
-
     @Override
     public void runOpMode() {
 
@@ -40,9 +37,9 @@ public class AutonExample extends LinearOpMode {
         bot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bot.enableBrakeMode(true);
         
-        PID xPid = new PID(.7, .08, .02);
-        PID yPid = new PID(.8, .08, .02);  // Something about friction for pDy > pDx
-        PID thetaPid = new PID(1.5, .98, .09);
+        PID xPid = new PID(.05, .0, .02);
+        PID yPid = new PID(.05, .0, .02);  // Something about friction for pDy > pDx
+        PID thetaPid = new PID(.014, 0, .0014);
         thetaPid.errorSumTotal = .1;
 
         pid = new PIDController(bot, telemetry);
@@ -65,14 +62,10 @@ public class AutonExample extends LinearOpMode {
         // ADD CONTROLLER SETTINGS HERE
         double startDelay = 0;
         while (opModeInInit()) {
-            gpad1.update(gamepad1);
-            gpad2.update(gamepad2);
-
-            if (gpad1.get("a") || gpad2.get("a")) side = COLOR.RED;
-            if (gpad1.get("b") || gpad2.get("b")) side = COLOR.BLUE;
-
-            if (gpad1.get("db_dpad_left") || gpad2.get("db_dpad_left")) startDelay = startDelay == 0 ? 0 : startDelay + 1;
-            if (gpad1.get("db_dpad_right") || gpad2.get("db_dpad_right")) startDelay += 1;
+            if (gamepad1.a || gamepad2.a) side = COLOR.RED;
+            if (gamepad1.b || gamepad2.b) side = COLOR.BLUE;
+            
+            startDelay = 2;
 
             telemetry.addData("Side", side == COLOR.BLUE ? "BLUE" : "RED");
             telemetry.addData("Start Delay", startDelay);
@@ -85,14 +78,14 @@ public class AutonExample extends LinearOpMode {
             reflection = 1;
             bot.setLaunchControllerTarget(redTarget);
         } else {
-            reflection = 1;
+            reflection = -1;
             bot.setLaunchControllerTarget(blueTarget);
         }
 
         // State machine steps, positions
-        Pose2D startPos = new Pose2D(DistanceUnit.INCH, 63, -12 * reflection, AngleUnit.DEGREES, -180 * reflection);
-        Pose2D farLaunch = new Pose2D(DistanceUnit.INCH, 63, -12 * reflection, AngleUnit.DEGREES, -180 * reflection);
-        Pose2D rightBallTop = new Pose2D(DistanceUnit.INCH, 36, -33 * reflection, AngleUnit.DEGREES, -90 * reflection);
+        Pose2D startPos = new Pose2D(DistanceUnit.INCH, 64, -16 * reflection, AngleUnit.DEGREES, 90);
+        Pose2D farLaunch = new Pose2D(DistanceUnit.INCH, 0, 14 * reflection, AngleUnit.DEGREES, 90);
+        Pose2D rightBallTop = new Pose2D(DistanceUnit.INCH, 36, -33 * reflection, AngleUnit.DEGREES, 180 * reflection);
 
         // Configure state machine variables
         asm.inventory.add(COLOR.PURPLE);
@@ -104,15 +97,16 @@ public class AutonExample extends LinearOpMode {
 
         bot.setPosition(startPos); 
         dsm.waitForSeconds(startDelay);
-        dsm.waitForSeconds(5).run(() ->
-        asm.addState("POWER"));
-        dsm.moveTo(farLaunch).run(() ->
-        asm.addState("FIRE"));
-        dsm.waitForSeconds(30);
+        dsm.moveTo(farLaunch);
+        // dsm.waitForSeconds(5).run(() ->
+        // asm.addState("POWER"));
+        // dsm.moveTo(farLaunch).run(() ->
+        // asm.addState("FIRE"));
+        // dsm.waitForSeconds(30);
 
         dsm.start();
         asm.start();
-        bot.startDriveThread();
+        // bot.startDriveThread();
         bot.startLaunchThread();
         
         // Main loop
@@ -132,7 +126,7 @@ public class AutonExample extends LinearOpMode {
             telemetry.addData("Target y", pid.getTargetY());
             telemetry.addData("Current x", currentPos.getX(DistanceUnit.INCH));
             telemetry.addData("Current y", currentPos.getY(DistanceUnit.INCH));
-            telemetry.addData("Heading", -bot.getHeading());
+            telemetry.addData("Heading", bot.getHeading());
             telemetry.update();
         }
 

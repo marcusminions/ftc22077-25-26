@@ -133,7 +133,7 @@ public class Bot {
             the tracking point the Y (strafe) odometry pod is. forward of center is a positive number,
             backwards is a negative number.
         */
-        odo.setOffsets(120.0, 105.0, DistanceUnit.MM);
+        odo.setOffsets(26.0, 0, DistanceUnit.MM);
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
@@ -183,7 +183,7 @@ public class Bot {
     public int getBLPosPrev() { return backLeftPosPrev;   }
     public int getBRPosPrev() { return backRightPosPrev;  }
 
-    public double getIMUHeading(){ return -imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);}
+    public double getIMUHeading(){ return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);}
     public void resetIMUHeading(){ imu.resetYaw(); }
     
     public Pose2D getPosition(){
@@ -203,7 +203,9 @@ public class Bot {
     private Pose2D getOdoPosition(){
         // returns the odo position direct from the odometry computer
         // (this is private so that getPosition is used, which is properly synced with the update ticks)
-        return odo.getPosition();
+        Pose2D odoPose = odo.getPosition();
+        Pose2D corrected = new Pose2D(DistanceUnit.INCH, odoPose.getY(DistanceUnit.INCH), odoPose.getX(DistanceUnit.INCH), AngleUnit.DEGREES, 0);
+        return corrected;
     }
     private Pose2D getOdoVelocity(){
         // Returns the velocity according to the pinpoint computer
@@ -231,7 +233,7 @@ public class Bot {
     
     public void resetHeading() {
         angleOffset = 0;
-        angleOffset = getHeading();
+        angleOffset = getHeading() + 180;
     }
 
     public synchronized double getVoltage()
@@ -245,6 +247,7 @@ public class Bot {
     
     public void setHeading(double heading){
         setPosition(new Pose2D(DistanceUnit.INCH, getX(), getY(), AngleUnit.DEGREES, heading));
+        angleOffset = -heading;
     }
     
     public void setPosition(double x, double y){
@@ -253,10 +256,13 @@ public class Bot {
     public void setPosition(double x, double y, double heading){
         //overloading setPosition to take an x, y, and heading instead of a pose for QOL
         setPosition(new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, heading));
+        angleOffset = -heading;
     }
     public void setPosition(Pose2D pos)
     { // overriding the current position read by the Gobilda Pinpoint Odometry Computer
-        odo.setPosition(pos);
+        Pose2D corrected = new Pose2D(DistanceUnit.INCH, pos.getY(DistanceUnit.INCH), pos.getX(DistanceUnit.INCH), AngleUnit.DEGREES, pos.getHeading(AngleUnit.DEGREES));
+        odo.setPosition(corrected);
+        angleOffset = -pos.getHeading(AngleUnit.DEGREES);
     }
 
     public void setDirections()
@@ -350,10 +356,10 @@ public class Bot {
 
         // adding and subtracting the x, y, and theta power values for each wheel to
         // push the robot in the vector direction made when combining all three powers
-        double lfPower = ((rx - ry + rw) / denom) / voltageMulti;
-        double rfPower = ((rx + ry - rw) / denom) / voltageMulti;
-        double lbPower = ((rx + ry + rw) / denom) / voltageMulti;
-        double rbPower = ((rx - ry - rw) / denom) / voltageMulti;
+        double lfPower = ((rx - ry - rw) / denom) / voltageMulti;
+        double rfPower = ((rx + ry + rw) / denom) / voltageMulti;
+        double lbPower = ((rx + ry - rw) / denom) / voltageMulti;
+        double rbPower = ((rx - ry + rw) / denom) / voltageMulti;
         
         // applying calculated vector powers to each motor
         if (usingDriveController) {
@@ -416,7 +422,7 @@ public class Bot {
 
     public void startDriveThread() { driveThread.start(); }
     public void stopDriveThread() {
-        driveThread.stop();
+        driveController.stop();
         try {
             driveThread.join();
         } catch (InterruptedException e) {

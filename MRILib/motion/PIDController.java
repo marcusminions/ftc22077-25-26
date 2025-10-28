@@ -85,9 +85,9 @@ public class PIDController {
         // clamping translation while keeping ratio and
         // sending field centric power call to be translated to robot centric
         if(max>1)
-            bot.driveFieldXYW(xVal/max*maxSpeed.get(), yVal/max*maxSpeed.get(), thetaVal*maxAngSpeed.get());
+            bot.driveFieldXYW(yVal/max*maxSpeed.get(), -xVal/max*maxSpeed.get(), thetaVal*maxAngSpeed.get());
         else
-            bot.driveFieldXYW(xVal*maxSpeed.get(), yVal*maxSpeed.get(), thetaVal*maxAngSpeed.get());
+            bot.driveFieldXYW(yVal*maxSpeed.get(), -xVal*maxSpeed.get(), thetaVal*maxAngSpeed.get());
         //bot.driveFieldXYW(0,0,thetaVal*maxAngSpeed);
         
         

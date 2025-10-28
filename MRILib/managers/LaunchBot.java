@@ -110,7 +110,7 @@ public class LaunchBot extends Bot {
     public double getRightVelocity() { return rightVel; }
 
     // Setters
-    public void setLeftPower(double power)        { left.setPower(power); getTelemetry().addData("lp", power); }
+    public void setLeftPower(double power)        { left.setPower(power); }
     public void setRightPower(double power)       { right.setPower(power); }
     public void setLeftVelocity(double velocity)  { left.setVelocity(velocity + launchModifier); }
     public void setRightVelocity(double velocity) { right.setVelocity(velocity + launchModifier); }
