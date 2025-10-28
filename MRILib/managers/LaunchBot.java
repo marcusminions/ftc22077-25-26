@@ -143,8 +143,8 @@ public class LaunchBot extends Bot {
     public boolean launchReady() { return launchController.launchReady(); }
 
     // Deal with threads
-    public void startMultiThread() { launchThread.start(); }
-    public void stopMultiThread() {
+    public void startLaunchThread() { launchThread.start(); }
+    public void stopLaunchThread() {
         launchController.stop();
         try {
             launchThread.join();

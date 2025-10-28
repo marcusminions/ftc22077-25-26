@@ -137,6 +137,9 @@ public class ArmFSM {
         if (!currentStates.contains(state)) {
             currentStates.add(state);
             state.start();
+        } else { // Resets order for mutual exclusion
+            currentStates.remove(state);
+            currentStates.add(state);
         }
     }
 
@@ -367,4 +370,3 @@ class ArmState extends BotState{
     public HashMap<String, Boolean> getTransitions() { return transitions; }
     public HashMap<String, Boolean> getParallels()   { return parallels; }
 }
-
