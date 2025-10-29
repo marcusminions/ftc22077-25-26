@@ -67,13 +67,13 @@ public class DriveFSM
     //MOVETO OVERLOADS
     
     public DriveFSM moveTo(double x, double y, double theta, Runnable command) {
-        return moveTo(x, y, theta, command, 10); }
+        return moveTo(x, y, theta, command, 5); }
 
     public DriveFSM moveTo(double x, double y, double theta, double timeout) { 
         return moveTo(x, y, theta, null, timeout); }
 
     public DriveFSM moveTo(double x, double y, double theta) { 
-        return moveTo(x, y, theta, null, 10); }
+        return moveTo(x, y, theta, null, 5); }
 
     public DriveFSM moveTo(Pose2D pose){ 
         return moveTo(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), pose.getHeading(AngleUnit.DEGREES)); }

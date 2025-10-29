@@ -20,7 +20,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 
-@Autonomous(name = "AutonExample")
+@Autonomous(name = "AAuton")
 public class AutonExample extends LinearOpMode {
 
     public LaunchBot bot;
@@ -37,8 +37,8 @@ public class AutonExample extends LinearOpMode {
         bot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bot.enableBrakeMode(true);
         
-        PID xPid = new PID(.05, .0, .02);
-        PID yPid = new PID(.05, .0, .02);  // Something about friction for pDy > pDx
+        PID xPid = new PID(.05, .0, .01);
+        PID yPid = new PID(.05, .0, .01);  // Something about friction for pDy > pDx
         PID thetaPid = new PID(.014, 0, .0014);
         thetaPid.errorSumTotal = .1;
 
@@ -84,7 +84,7 @@ public class AutonExample extends LinearOpMode {
 
         // State machine steps, positions
         Pose2D startPos = new Pose2D(DistanceUnit.INCH, 64, -16 * reflection, AngleUnit.DEGREES, 90);
-        Pose2D farLaunch = new Pose2D(DistanceUnit.INCH, 0, 14 * reflection, AngleUnit.DEGREES, 90);
+        Pose2D farLaunch = new Pose2D(DistanceUnit.INCH, 0, -16 * reflection, AngleUnit.DEGREES, 90);
         Pose2D rightBallTop = new Pose2D(DistanceUnit.INCH, 36, -33 * reflection, AngleUnit.DEGREES, 180 * reflection);
 
         // Configure state machine variables
@@ -98,8 +98,8 @@ public class AutonExample extends LinearOpMode {
         bot.setPosition(startPos); 
         dsm.waitForSeconds(startDelay);
         dsm.moveTo(farLaunch);
-        // dsm.waitForSeconds(5).run(() ->
-        // asm.addState("POWER"));
+        dsm.waitForSeconds(5).run(() ->
+        asm.addState("FIRE"));
         // dsm.moveTo(farLaunch).run(() ->
         // asm.addState("FIRE"));
         // dsm.waitForSeconds(30);
@@ -119,6 +119,7 @@ public class AutonExample extends LinearOpMode {
             Pose2D currentPos = bot.getPosition();
 
             telemetry.addData("Status", "Running");
+            telemetry.addData("States", asm.currentStates);
             telemetry.addLine();
             telemetry.addData("Target Angle", pid.getTargetDegrees());
             telemetry.addData("Current Angle", pid.getCurrentDegrees());
@@ -127,6 +128,7 @@ public class AutonExample extends LinearOpMode {
             telemetry.addData("Current x", currentPos.getX(DistanceUnit.INCH));
             telemetry.addData("Current y", currentPos.getY(DistanceUnit.INCH));
             telemetry.addData("Heading", bot.getHeading());
+            telemetry.addLine();
             telemetry.update();
         }
 

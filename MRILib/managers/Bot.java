@@ -233,7 +233,7 @@ public class Bot {
     
     public void resetHeading() {
         angleOffset = 0;
-        angleOffset = getHeading() + 180;
+        angleOffset = getHeading();
     }
 
     public synchronized double getVoltage()
@@ -366,8 +366,8 @@ public class Bot {
             driveController.setPowers(lfPower, rfPower, lbPower, rbPower);
         } else {
             frontLeft.setPower(lfPower);
-            frontRight.setPower(rfPower);
             backLeft.setPower(lbPower);
+            frontRight.setPower(rfPower);
             backRight.setPower(rbPower);
         }
         
@@ -400,9 +400,9 @@ public class Bot {
         //double theta = Math.toRadians(-getHeading());
 
         //calculating the rotated x power
-        double rx = fx * Math.cos(-theta) - fy * Math.sin(-theta);
+        double rx = fx * Math.cos(theta) - fy * Math.sin(theta);
         //calculating the rotated y power
-        double ry = fx * Math.sin(-theta) + fy * Math.cos(-theta);
+        double ry = fx * Math.sin(theta) + fy * Math.cos(theta);
 
         // inputting the new rotated x and y vector to driveXYW
         // passing through the rotation value (fw) as rotation around the robot's z axis

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import MRILib.*;
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -24,6 +25,7 @@ public class TeleopExampleBackup extends LinearOpMode {
     public LaunchBot bot;
     public PIDController pid;
     public DriveFSM dsm;
+    LED led;
     // public ArmFSM asm;
 
     @Override
@@ -32,13 +34,13 @@ public class TeleopExampleBackup extends LinearOpMode {
         // _________ INITIALIZATION _________
         bot = new LaunchBot(this);
         // asm = new ArmFSM(bot, gpad1, gpad2, telemetry);
-
+        led = hardwareMap.get(LED.class, "led");
         bot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bot.enableBrakeMode(true);
 
         PID xPid = new PID(.7, .08, .02);
         PID yPid = new PID(.8, .08, .02);  // Something about friction for pDy > pDx
-        PID thetaPid = new PID(.014, 0, .0014);
+        PID thetaPid = new PID(1.5, .98, .09);
         PID drivingThetaPid = new PID(.014, 0, .0014);
         thetaPid.errorSumTotal = .1;
         drivingThetaPid.isAngle = true;
@@ -48,6 +50,7 @@ public class TeleopExampleBackup extends LinearOpMode {
         pid.setTurnPID(thetaPid);
         
         dsm = new DriveFSM(bot, pid, telemetry);
+        led.off();
         
         // Setup side for teleop so aiming is correct, default to red
         COLOR side = COLOR.RED;
@@ -70,8 +73,6 @@ public class TeleopExampleBackup extends LinearOpMode {
 
         // asm.start();
         // bot.startMultiThread();
-        Pose2D startPos = new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0);
-        bot.setPosition(startPos);
         drivingThetaPid.start();
         calculateTarget(side);
         
@@ -82,6 +83,7 @@ public class TeleopExampleBackup extends LinearOpMode {
         boolean lastDpadL = false;
         
         double intakePower = .8;
+        
         
         boolean flyWheelToggle = false;
         boolean intakeToggle = false;
@@ -101,16 +103,16 @@ public class TeleopExampleBackup extends LinearOpMode {
             if (gamepad1.start && gamepad1.dpad_right) { side = COLOR.BLUE; calculateTarget(side); }
 
             // Driving
-            double dx = gamepad1.left_stick_y;
-            double dy = gamepad1.left_stick_x;
+            double dx = -gamepad1.left_stick_y;
+            double dy = -gamepad1.left_stick_x;
             if (gamepad1.x) { // Override steering
                 Pose2D target = calculateTarget(side);
                 double x = target.getX(DistanceUnit.INCH) - bot.getX();
                 double y = target.getY(DistanceUnit.INCH) - bot.getY();
                 angle = Math.atan2(y, x) * 180 / Math.PI;
             } else { // Standard fieldcentric steering
-                double x = gamepad1.right_stick_x;
-                double y = gamepad1.right_stick_y;
+                double x = -gamepad1.right_stick_x;
+                double y = -gamepad1.right_stick_y;
                 if (Math.sqrt(x*x + y*y) > .8) angle = Math.atan2(x, y) * 180 / Math.PI;
             }
 
@@ -144,15 +146,18 @@ public class TeleopExampleBackup extends LinearOpMode {
             else bot.setConveyorPower(0);
             
             if (flyWheelToggle) {
-                bot.setLeftVelocity(gamepad2.left_trigger * 1850);
+                bot.setLeftVelocity(gamepad2.left_trigger * 1780);
              
-                bot.setRightVelocity(gamepad2.left_trigger * 1850);
+                bot.setRightVelocity(gamepad2.left_trigger * 1780);
                 gamepad2.rumble(75);
             } else {
                 bot.setLeftPower(0);
                 bot.setRightPower(0);
             }
-            
+            if(bot.getLeftVelocity() >= 1760 && bot.getLeftVelocity() <= 1800) {
+                led.on();
+            }
+            else { led.off(); }
             // More utility
             if (gamepad2.x) lastGpadX = true; else lastGpadX = false;
             if (gamepad2.a) lastGpadA = true; else lastGpadA = false;
@@ -160,7 +165,7 @@ public class TeleopExampleBackup extends LinearOpMode {
             if (gamepad2.dpad_left) lastDpadL = true; else lastDpadL = false;
 
             // _________ TELEMETRY _________
-            telemetry.addData("Heading", -bot.getHeading());
+            telemetry.addData("Heading", bot.getHeading());
             telemetry.addData("Angle", angle);
             telemetry.addData("Side", side);
             telemetry.addLine("-----------------------");
@@ -172,9 +177,11 @@ public class TeleopExampleBackup extends LinearOpMode {
             // telemetry.addData("States", asm.currentStates);
 
             Pose2D currentPos = bot.getPosition();
-            telemetry.addLine("--------DEBUG--------");
-            telemetry.addData("Current x", currentPos.getX(DistanceUnit.INCH));
-            telemetry.addData("Current y", currentPos.getY(DistanceUnit.INCH));
+            if (debug) {
+                telemetry.addLine("--------DEBUG--------");
+                telemetry.addData("Current x", currentPos.getX(DistanceUnit.INCH));
+                telemetry.addData("Current y", currentPos.getY(DistanceUnit.INCH));
+            }
             
             if(gamepad2.guide) {
                 this.calculateTarget(COLOR.BLUE);

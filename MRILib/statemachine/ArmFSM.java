@@ -281,7 +281,7 @@ public class ArmFSM {
             @Override
             void update() {
                 bot.setLaunchControllerPowerMode(LaunchMode.POWER);
-                bot.setConveyorPower(RAMP_POWER);
+                bot.setIntakePower(.2);
                 
                 if (auton) {
                     bot.setLaunchControllerAimMode(LaunchMode.AIM);

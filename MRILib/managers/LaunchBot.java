@@ -114,6 +114,7 @@ public class LaunchBot extends Bot {
     public void setRightPower(double power)       { right.setPower(power); }
     public void setLeftVelocity(double velocity)  { left.setVelocity(velocity + launchModifier); }
     public void setRightVelocity(double velocity) { right.setVelocity(velocity + launchModifier); }
+    
 
     public void setConveyorPower(double power)        { conveyor.setPower(power); }
     public void setIntakePower(double power)          { intake.setPower(power); }
