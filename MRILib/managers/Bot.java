@@ -204,7 +204,7 @@ public class Bot {
         // returns the odo position direct from the odometry computer
         // (this is private so that getPosition is used, which is properly synced with the update ticks)
         Pose2D odoPose = odo.getPosition();
-        Pose2D corrected = new Pose2D(DistanceUnit.INCH, odoPose.getY(DistanceUnit.INCH), odoPose.getX(DistanceUnit.INCH), AngleUnit.DEGREES, 0);
+        Pose2D corrected = new Pose2D(DistanceUnit.INCH, odoPose.getY(DistanceUnit.INCH), odoPose.getX(DistanceUnit.INCH), AngleUnit.DEGREES, getHeading());
         return corrected;
     }
     private Pose2D getOdoVelocity(){
@@ -247,7 +247,7 @@ public class Bot {
     
     public void setHeading(double heading){
         setPosition(new Pose2D(DistanceUnit.INCH, getX(), getY(), AngleUnit.DEGREES, heading));
-        angleOffset = -heading;
+        angleOffset = heading;
     }
     
     public void setPosition(double x, double y){

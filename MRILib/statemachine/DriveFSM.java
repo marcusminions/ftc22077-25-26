@@ -23,7 +23,7 @@ public class DriveFSM
 {
     private Bot bot;
     private PIDController pid = null;
-    ArrayList<BotState> steps = new ArrayList<>();
+    public ArrayList<BotState> steps = new ArrayList<>();
     Telemetry telemetry;
 
     public int currentStep = 0;
@@ -167,7 +167,8 @@ public class DriveFSM
             AtomicReference<Double> tAngle = new AtomicReference<Double>(999D);
             void detectOverrideAngle(BotEvent event) {
                 if (event.override) tAngle.set(event.angle);
-                else tAngle.set(999D);
+                else tAngle.set(-45D);
+                tAngle.set(-45D);
             }
 
             @Override

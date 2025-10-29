@@ -70,7 +70,7 @@ public class PIDController {
     
         // Get field-centric PID outputs for x and y (translation)
         double xVal = xPID.update(curX);  // how far we are from target X
-        double yVal = yPID.update(curY);  // how far we are from target Y
+        double yVal = -yPID.update(curY);  // how far we are from target Y
         
         double thetaVal = -thetaPID.update(botHeading);
         thetaVal = Range.clip(thetaVal, -1.0, 1.0);
@@ -84,10 +84,11 @@ public class PIDController {
         
         // clamping translation while keeping ratio and
         // sending field centric power call to be translated to robot centric
+        telemetry.addData("thetaval", thetaVal);
         if(max>1)
-            bot.driveFieldXYW(yVal/max*maxSpeed.get(), -xVal/max*maxSpeed.get(), thetaVal*maxAngSpeed.get());
+            bot.driveFieldXYW(yVal/max*maxSpeed.get(), xVal/max*maxSpeed.get(), thetaVal*maxAngSpeed.get());
         else
-            bot.driveFieldXYW(yVal*maxSpeed.get(), -xVal*maxSpeed.get(), thetaVal*maxAngSpeed.get());
+            bot.driveFieldXYW(yVal*maxSpeed.get(), xVal*maxSpeed.get(), thetaVal*maxAngSpeed.get());
         //bot.driveFieldXYW(0,0,thetaVal*maxAngSpeed);
         
         

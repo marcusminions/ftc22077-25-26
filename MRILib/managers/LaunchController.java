@@ -75,9 +75,9 @@ public class LaunchController implements Runnable {
             // ...
 
             // Placeholders
-            deltaTheta = 0.0;
-            targetLeftVel = 2000.0;
-            targetRightVel = 2000.0;
+            deltaTheta = 30.0;
+            targetLeftVel = 1780.0;
+            targetRightVel = 1780.0;
 
             // Now, only launch if on
             if (aimMode == LaunchMode.AIM) overrideSteering(true, deltaTheta);
@@ -103,8 +103,8 @@ public class LaunchController implements Runnable {
     }
     
     public boolean launchReady() {
-        if (Math.abs(bot.getLeftVelocity()) > Math.abs(targetLeftVel) - 20 &&
-            Math.abs(bot.getRightVelocity()) > Math.abs(targetRightVel) - 20) {
+        if (Math.abs(bot.getLeftVelocity()) > Math.abs(targetLeftVel) - 30 &&
+            Math.abs(bot.getRightVelocity()) > Math.abs(targetRightVel) - 30) {
             return true;
         } else return false;
     }

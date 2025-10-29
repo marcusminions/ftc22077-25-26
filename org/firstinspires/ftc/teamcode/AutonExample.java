@@ -37,9 +37,9 @@ public class AutonExample extends LinearOpMode {
         bot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bot.enableBrakeMode(true);
         
-        PID xPid = new PID(.05, .0, .01);
-        PID yPid = new PID(.05, .0, .01);  // Something about friction for pDy > pDx
-        PID thetaPid = new PID(.014, 0, .0014);
+        PID xPid = new PID(.045, .0, .007);
+        PID yPid = new PID(.045, .0, .007);  // Something about friction for pDy > pDx
+        PID thetaPid = new PID(.08, .0, .014);
         thetaPid.errorSumTotal = .1;
 
         pid = new PIDController(bot, telemetry);
@@ -84,7 +84,7 @@ public class AutonExample extends LinearOpMode {
 
         // State machine steps, positions
         Pose2D startPos = new Pose2D(DistanceUnit.INCH, 64, -16 * reflection, AngleUnit.DEGREES, 90);
-        Pose2D farLaunch = new Pose2D(DistanceUnit.INCH, 0, -16 * reflection, AngleUnit.DEGREES, 90);
+        Pose2D midLaunch = new Pose2D(DistanceUnit.INCH, -5, -16 * reflection, AngleUnit.DEGREES, 90);
         Pose2D rightBallTop = new Pose2D(DistanceUnit.INCH, 36, -33 * reflection, AngleUnit.DEGREES, 180 * reflection);
 
         // Configure state machine variables
@@ -97,10 +97,12 @@ public class AutonExample extends LinearOpMode {
 
         bot.setPosition(startPos); 
         dsm.waitForSeconds(startDelay);
-        dsm.moveTo(farLaunch);
-        dsm.waitForSeconds(5).run(() ->
+        dsm.moveTo(midLaunch);
+        dsm.waitForSeconds(1).run(() ->
         asm.addState("FIRE"));
-        // dsm.moveTo(farLaunch).run(() ->
+        dsm.waitForSeconds(5);
+        dsm.waitForSeconds(20);
+        // dsm.moveTo(midLauch).run(() ->
         // asm.addState("FIRE"));
         // dsm.waitForSeconds(30);
 
@@ -118,8 +120,10 @@ public class AutonExample extends LinearOpMode {
             // For telemetry purposes
             Pose2D currentPos = bot.getPosition();
 
-            telemetry.addData("Status", "Running");
+            telemetry.addLine();
+            telemetry.addData("LeftVel", asm.inLaunchZone);
             telemetry.addData("States", asm.currentStates);
+            telemetry.addData("Drive State", dsm.steps.get(dsm.currentStep));
             telemetry.addLine();
             telemetry.addData("Target Angle", pid.getTargetDegrees());
             telemetry.addData("Current Angle", pid.getCurrentDegrees());

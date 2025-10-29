@@ -254,7 +254,7 @@ public class ArmFSM {
         new ArmState("KICK") {
             ElapsedTime timer = new ElapsedTime();
             boolean kicked = false;
-            double kickTime = 1;
+            double kickTime = 2;
             
             @Override
             void update() {
@@ -265,25 +265,31 @@ public class ArmFSM {
                     kicked = true;
                     
                     if (inventory.size() == 0) inventory.add(COLOR.PURPLE);
-                    BotEventManager.broadcast(EventType.LAUNCH, new BotEvent(){ 
-                        public COLOR color = inventory.get(0);
-                    });
+                    // BotEventManager.broadcast(EventType.LAUNCH, new BotEvent(){ 
+                    //     public COLOR color = inventory.get(0);
+                    // });
                 } else if (timer.seconds() > kickTime - KICK_TIME + 1) {
                     bot.setKickerPosition(BACK);
                 }
             }
             
             @Override
-            void end() { kicked = false; }
+            void end() {
+                kicked = false;
+                BotEventManager.broadcast(EventType.LAUNCH, new BotEvent(){ 
+                        public COLOR color = inventory.get(0);
+                });
+            }
         };
         
         new ArmState("FIRE") {
             @Override
             void update() {
                 bot.setLaunchControllerPowerMode(LaunchMode.POWER);
-                bot.setIntakePower(.2);
+                bot.setIntakePower(.6);
                 
                 if (auton) {
+                    inLaunchZone = true;
                     bot.setLaunchControllerAimMode(LaunchMode.AIM);
                     setTransition("DEFAULT", inventory.size() < 1);
                     setParallel("KICK", bot.launchReady() && inLaunchZone);
@@ -294,6 +300,7 @@ public class ArmFSM {
             void end() {
                 bot.setLaunchControllerPowerMode(LaunchMode.OFF);
                 bot.setConveyorPower(0);
+                bot.setIntakePower(0);
             }
         };
 
@@ -302,9 +309,9 @@ public class ArmFSM {
             @Override
             void update() {
                 Pose2D p = bot.getPosition();
-                if (p.getX(DistanceUnit.INCH) + Math.abs(p.getY(DistanceUnit.INCH)) < WIDTH / 2) {  // Large zone
+                if (p.getX(DistanceUnit.INCH) + Math.abs(p.getY(DistanceUnit.INCH)) < LENGTH / 2) {  // Large zone
                     inLaunchZone = true;
-                } else if (-p.getX(DistanceUnit.INCH) + 54 + Math.abs(p.getY(DistanceUnit.INCH)) < WIDTH / 2) {  // Small zone
+                } else if (-p.getX(DistanceUnit.INCH) + 54 + Math.abs(p.getY(DistanceUnit.INCH)) < LENGTH / 2) {  // Small zone
                     inLaunchZone = true;
                 } else {
                     inLaunchZone = false;
