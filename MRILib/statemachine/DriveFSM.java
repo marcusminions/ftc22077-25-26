@@ -2,7 +2,7 @@ package MRILib.statemachine;
 
 import MRILib.managers.*;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import MRILib.motion.PIDController;
+import MRILib.motion.PID;
 import MRILib.util.Mathf;
 import MRILib.eventlistener.BotEventManager.*;
 import MRILib.eventlistener.BotEventManager;
@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.Range;
 import java.util.ArrayList;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes.DetectorResult;
@@ -22,15 +23,19 @@ import java.util.concurrent.atomic.AtomicReference;
 public class DriveFSM
 {
     private Bot bot;
-    private PIDController pid = null;
+    private PID xPid;
+    private PID yPid;
+    private PID wPid;
     public ArrayList<BotState> steps = new ArrayList<>();
     Telemetry telemetry;
 
     public int currentStep = 0;
 
-    public DriveFSM(Bot bot, PIDController pid, Telemetry telemetry){
+    public DriveFSM(Bot bot, PID x, PID y, PID w, Telemetry telemetry){
         this.bot = bot;
-        this.pid = pid;
+        this.xPid = x;
+        this.yPid = y;
+        this.wPid = w;
         this.telemetry = telemetry;
     }
     
@@ -91,14 +96,9 @@ public class DriveFSM
         { // Overriding the base methods of BotState with logic specific to this state
             double tx = x;
             double ty = y;
+            double tAngle = theta;
             double originalTAngle = theta;
             ElapsedTime timer;
-
-            AtomicReference<Double> tAngle = new AtomicReference<>(theta);
-            void detectOverrideAngle(BotEvent event) {
-                if (event.override) tAngle.set(event.angle);
-                else tAngle.set(originalTAngle);
-            }
             
             @Override
             void start(){
@@ -106,15 +106,14 @@ public class DriveFSM
                 if(command!=null)command.run();
 
                 // Setting PID target position
-                pid.moveTo(tx,ty,tAngle.get());
+                xPid.setTarget(tx);
+                yPid.setTarget(ty);
+                wPid.setTarget(tAngle);
     
-                // Subscribe to overriding of angle
-                BotEventManager.subscribe(EventType.OVERRIDE_DIRECTION, event -> detectOverrideAngle(event));
-
                 // Saving old values
                 lastX = tx;
                 lastY = ty;
-                lastAngle = tAngle.get();
+                lastAngle = tAngle;
 
                 // Starting timer for timeout
                 timer = new ElapsedTime();
@@ -122,18 +121,21 @@ public class DriveFSM
             @Override
             void update(){
                 // Updating pid to set motor values
-                pid.setAngle(tAngle.get());
-                pid.update();
+                wPid.setTarget(tAngle);
+                bot.driveFieldXYW(
+                    xPid.update(bot.getX()),
+                    yPid.update(bot.getY()),
+                    Range.clip(wPid.update(bot.getHeading()), -1.0, 1.0)
+                );
 
                 // Calculating distance from target position using odometry
                 Pose2D curPos = bot.getPosition();
                 double deltaX = tx - curPos.getX(DistanceUnit.INCH);
                 double deltaY = ty - curPos.getY(DistanceUnit.INCH);
-                double deltaAngle = bot.getHeading()-tAngle.get();
+                double deltaAngle = bot.getHeading()-tAngle;
                 //deltaAngle = deltaAngle;
                 double dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                telemetry.addData("error", dist);
-                telemetry.addData("radiansError", Math.toRadians(deltaAngle));
+                telemetry.addData("distance", dist);
                 telemetry.addData("thetaError", deltaAngle);
 
                 // Declaring the acceptable error to allow moving onto the next step
@@ -164,20 +166,12 @@ public class DriveFSM
         { // Overriding botstate with wait logic
             ElapsedTime timer;
 
-            AtomicReference<Double> tAngle = new AtomicReference<Double>(999D);
-            void detectOverrideAngle(BotEvent event) {
-                if (event.override) tAngle.set(event.angle);
-                else tAngle.set(-45D);
-                tAngle.set(-45D);
-            }
+            double tAngle = 999.0;
 
             @Override
             void start(){
                 // Running parallel arm command
                 if(command!=null)command.run();
-
-                // Subscribe to overriding of angle
-                BotEventManager.subscribe(EventType.OVERRIDE_DIRECTION, event -> detectOverrideAngle(event));
 
                 // Setting pid target to the last target
                 //pid.moveTo(lastX,lastY,lastAngle);
@@ -190,10 +184,10 @@ public class DriveFSM
                 //pid.update();
 
                 // Sit still unless overriding angle
-                if (tAngle.get() == 999D) bot.driveXYW(0, 0, 0);
+                if (tAngle == 999.0) bot.driveXYW(0, 0, 0);
                 else {
-                    pid.setAngle(tAngle.get());
-                    pid.update();
+                    wPid.setTarget(tAngle);
+                    bot.driveFieldXYW(0, 0, wPid.update(bot.getHeading()));
                 }
 
                 // Moving to next state if wait value has elapsed

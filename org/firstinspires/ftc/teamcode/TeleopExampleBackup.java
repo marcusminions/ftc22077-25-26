@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import MRILib.*;
+import MRILib.GameValues.COLOR;
+
 import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -18,15 +20,18 @@ import static MRILib.BotValues.*;
 import static MRILib.GameValues.*;
 
 
-@TeleOp(name = "Example Teleop (Backup)")
+@TeleOp(name = "Backup Teleop")
 public class TeleopExampleBackup extends LinearOpMode {
-    
    
     public LaunchBot bot;
-    public PIDController pid;
     public DriveFSM dsm;
-    LED led;
     // public ArmFSM asm;
+    LED led;
+
+    public PID xPid;
+    public PID yPid;
+    public PID wPid;
+    public PID wPidDriving;
 
     @Override
     public void runOpMode() {
@@ -40,16 +45,12 @@ public class TeleopExampleBackup extends LinearOpMode {
 
         PID xPid = new PID(.7, .08, .02);
         PID yPid = new PID(.8, .08, .02);  // Something about friction for pDy > pDx
-        PID thetaPid = new PID(1.5, .98, .09);
-        PID drivingThetaPid = new PID(.014, 0, .0014);
-        thetaPid.errorSumTotal = .1;
-        drivingThetaPid.isAngle = true;
-
-        pid = new PIDController(bot, telemetry);
-        pid.setPID(xPid, yPid);
-        pid.setTurnPID(thetaPid);
+        PID wPid = new PID(1.5, .98, .09);
+        PID wPidDriving = new PID(.014, 0, .0014);
+        wPid.errorSumTotal = .1;
+        wPidDriving.isAngle = true;
         
-        dsm = new DriveFSM(bot, pid, telemetry);
+        dsm = new DriveFSM(bot, xPid, yPid, wPid, telemetry);
         led.off();
         
         // Setup side for teleop so aiming is correct, default to red
@@ -73,7 +74,7 @@ public class TeleopExampleBackup extends LinearOpMode {
 
         // asm.start();
         // bot.startMultiThread();
-        drivingThetaPid.start();
+        wPidDriving.start();
         calculateTarget(side);
         
         // _________ CREATE OTHER VARIABLES _________
@@ -116,8 +117,8 @@ public class TeleopExampleBackup extends LinearOpMode {
                 if (Math.sqrt(x*x + y*y) > .8) angle = Math.atan2(x, y) * 180 / Math.PI;
             }
 
-            drivingThetaPid.setTarget(angle);
-            double dw = drivingThetaPid.update(bot.getHeading());
+            wPidDriving.setTarget(angle);
+            double dw = wPidDriving.update(bot.getHeading());
             bot.driveFieldXYW(dx, dy, dw);
             
             if (gamepad1.start && gamepad1.dpad_up) bot.resetHeading();

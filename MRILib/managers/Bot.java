@@ -219,7 +219,7 @@ public class Bot {
         // Returns the velocity according to the pinpoint computer
         double x = odo.getVelX(DistanceUnit.INCH);
         double y = odo.getVelY(DistanceUnit.INCH);
-        Pose2D velocity = new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, Math.atan2());
+        Pose2D velocity = new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, Math.atan2(y, x));
         return velocity;
     }
     public double getX(){
@@ -240,7 +240,7 @@ public class Bot {
         setHeading(0);
     }
 
-    public double setHeading(double heading) {
+    public void setHeading(double heading) {
         setPosition(getX(), getY(), heading);
     }
 
