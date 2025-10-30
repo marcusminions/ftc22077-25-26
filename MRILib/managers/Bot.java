@@ -404,9 +404,9 @@ public class Bot {
         //   and at the end of the day makes more sense for the maneuvering that FTC robots must perform in their matches
 
         // getting the current robot's yaw, and converting it to a usable form to calculate the offset
-        double theta = Math.toRadians(-getHeading());
+        double theta = Math.toRadians(getHeading());
         if(usingIMU){
-            theta = Math.toRadians(-getIMUHeading());
+            theta = Math.toRadians(getIMUHeading());
         }
         //double theta = Math.toRadians(-getHeading());
 
