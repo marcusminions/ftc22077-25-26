@@ -417,7 +417,8 @@ public class Bot {
         // inputting the new rotated x and y vector to driveXYW
         // passing through the rotation value (fw) as rotation around the robot's z axis
         // is unaffected by rotation of the directional power vector
-        driveXYW(rx, ry*1.1, fw);
+        // Strafe should be slightly higher due to wheel slippage
+        driveXYW(rx*1.1, ry, fw);
     }
 
     // Deal with threading
