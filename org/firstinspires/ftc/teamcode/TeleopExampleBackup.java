@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import MRILib.*;
-import MRILib.GameValues.COLOR;
-
 import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -20,18 +18,15 @@ import static MRILib.BotValues.*;
 import static MRILib.GameValues.*;
 
 
-@TeleOp(name = "Backup Teleop")
+@TeleOp(name = "Example Teleop (Backup)")
 public class TeleopExampleBackup extends LinearOpMode {
+    
    
     public LaunchBot bot;
+    public PIDController pid;
     public DriveFSM dsm;
-    // public ArmFSM asm;
     LED led;
-
-    public PID xPid;
-    public PID yPid;
-    public PID wPid;
-    public PID wPidDriving;
+    // public ArmFSM asm;
 
     @Override
     public void runOpMode() {
@@ -45,12 +40,16 @@ public class TeleopExampleBackup extends LinearOpMode {
 
         PID xPid = new PID(.7, .08, .02);
         PID yPid = new PID(.8, .08, .02);  // Something about friction for pDy > pDx
-        PID wPid = new PID(1.5, .98, .09);
-        PID wPidDriving = new PID(.014, 0, .0014);
-        wPid.errorSumTotal = .1;
-        wPidDriving.isAngle = true;
+        PID thetaPid = new PID(1.5, .98, .09);
+        PID drivingThetaPid = new PID(.014, 0, .0014);
+        thetaPid.errorSumTotal = .1;
+        drivingThetaPid.isAngle = true;
+
+        pid = new PIDController(bot, telemetry);
+        pid.setPID(xPid, yPid);
+        pid.setTurnPID(thetaPid);
         
-        dsm = new DriveFSM(bot, xPid, yPid, wPid, telemetry);
+        dsm = new DriveFSM(bot, pid, telemetry);
         led.off();
         
         // Setup side for teleop so aiming is correct, default to red
@@ -69,12 +68,15 @@ public class TeleopExampleBackup extends LinearOpMode {
 
         waitForStart();
         
+        bot.resetHeading();
+        bot.angleOffset = -90;
+        
         // asm.addState("P-LAUNCHZONE");
         // asm.addState("P-END");
 
         // asm.start();
         // bot.startMultiThread();
-        wPidDriving.start();
+        drivingThetaPid.start();
         calculateTarget(side);
         
         // _________ CREATE OTHER VARIABLES _________
@@ -117,8 +119,8 @@ public class TeleopExampleBackup extends LinearOpMode {
                 if (Math.sqrt(x*x + y*y) > .8) angle = Math.atan2(x, y) * 180 / Math.PI;
             }
 
-            wPidDriving.setTarget(angle);
-            double dw = wPidDriving.update(bot.getHeading());
+            drivingThetaPid.setTarget(angle);
+            double dw = drivingThetaPid.update(bot.getHeading());
             bot.driveFieldXYW(dx, dy, dw);
             
             if (gamepad1.start && gamepad1.dpad_up) bot.resetHeading();
@@ -129,33 +131,34 @@ public class TeleopExampleBackup extends LinearOpMode {
             // kicker is default open (back) lb kicks forward when held
             // dpad left is reverse intake, dpad up/down intake power .2, right dpad resets
             if (gamepad2.x && !lastGpadX) flyWheelToggle = !flyWheelToggle;
-            if (gamepad2.a && !lastGpadA) intakeToggle = !intakeToggle;
+            if (gamepad2.right_trigger > 0.1) { bot.setIntakePower(intakePower); }
+            else { bot.setIntakePower(0.08); }
             if (gamepad2.b && !lastGpadB) beltToggle = !beltToggle;
             if (gamepad2.dpad_left && !lastDpadL) reverseToggle *= -1;
             
-            if (gamepad2.dpad_up && intakePower <= .8) intakePower += .2;
-            if (gamepad2.dpad_down && intakePower >= .2) intakePower -= .2;
+            if (gamepad2.dpad_up) intakePower -= .1;
+            if (gamepad2.dpad_down) intakePower = .6;
             if (gamepad2.dpad_right) intakePower = .8;
+            if (bot.getIntakePower() == 0) intakePower = -0.025;
             
             if (gamepad2.left_bumper) bot.setKickerPosition(0);
             else bot.setKickerPosition(.10);
             
-            if (intakeToggle) bot.setIntakePower(intakePower * reverseToggle);
-            else bot.setIntakePower(0);
+            
             
             if (beltToggle) bot.setConveyorPower(1);
             else bot.setConveyorPower(0);
             
             if (flyWheelToggle) {
-                bot.setLeftVelocity(gamepad2.left_trigger * 1780);
+                bot.setLeftVelocity(gamepad2.left_trigger * 1810);
              
-                bot.setRightVelocity(gamepad2.left_trigger * 1780);
+                bot.setRightVelocity(gamepad2.left_trigger * 1810);
                 gamepad2.rumble(75);
             } else {
                 bot.setLeftPower(0);
                 bot.setRightPower(0);
             }
-            if(bot.getLeftVelocity() >= 1760 && bot.getLeftVelocity() <= 1800) {
+            if(bot.getLeftVelocity() >= 1790 && bot.getLeftVelocity() <= 1830) {
                 led.on();
             }
             else { led.off(); }
@@ -175,6 +178,7 @@ public class TeleopExampleBackup extends LinearOpMode {
             telemetry.addLine("-----------------------");
             telemetry.addData("last a", flyWheelToggle);
             telemetry.addData("left trigger", gamepad2.left_trigger);
+            telemetry.addData("INTAKE real power", bot.getIntakePower());
             // telemetry.addData("States", asm.currentStates);
 
             Pose2D currentPos = bot.getPosition();

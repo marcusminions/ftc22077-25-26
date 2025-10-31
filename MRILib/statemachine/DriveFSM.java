@@ -2,7 +2,7 @@ package MRILib.statemachine;
 
 import MRILib.managers.*;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import MRILib.motion.PID;
+import MRILib.motion.PIDController;
 import MRILib.util.Mathf;
 import MRILib.eventlistener.BotEventManager.*;
 import MRILib.eventlistener.BotEventManager;
@@ -13,7 +13,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.util.Range;
 import java.util.ArrayList;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes.DetectorResult;
@@ -23,19 +22,15 @@ import java.util.concurrent.atomic.AtomicReference;
 public class DriveFSM
 {
     private Bot bot;
-    private PID xPid;
-    private PID yPid;
-    private PID wPid;
+    private PIDController pid = null;
     public ArrayList<BotState> steps = new ArrayList<>();
     Telemetry telemetry;
 
     public int currentStep = 0;
 
-    public DriveFSM(Bot bot, PID x, PID y, PID w, Telemetry telemetry){
+    public DriveFSM(Bot bot, PIDController pid, Telemetry telemetry){
         this.bot = bot;
-        this.xPid = x;
-        this.yPid = y;
-        this.wPid = w;
+        this.pid = pid;
         this.telemetry = telemetry;
     }
     
@@ -96,9 +91,9 @@ public class DriveFSM
         { // Overriding the base methods of BotState with logic specific to this state
             double tx = x;
             double ty = y;
-            double tAngle = theta;
-            double originalTAngle = theta;
             ElapsedTime timer;
+
+            double tAngle = theta;
             
             @Override
             void start(){
@@ -106,9 +101,7 @@ public class DriveFSM
                 if(command!=null)command.run();
 
                 // Setting PID target position
-                xPid.setTarget(tx);
-                yPid.setTarget(ty);
-                wPid.setTarget(tAngle);
+                pid.moveTo(tx,ty,tAngle);
     
                 // Saving old values
                 lastX = tx;
@@ -121,12 +114,8 @@ public class DriveFSM
             @Override
             void update(){
                 // Updating pid to set motor values
-                wPid.setTarget(tAngle);
-                bot.driveFieldXYW(
-                    xPid.update(bot.getX()),
-                    yPid.update(bot.getY()),
-                    Range.clip(wPid.update(bot.getHeading()), -1.0, 1.0)
-                );
+                pid.setAngle(tAngle);
+                pid.update();
 
                 // Calculating distance from target position using odometry
                 Pose2D curPos = bot.getPosition();
@@ -135,7 +124,8 @@ public class DriveFSM
                 double deltaAngle = bot.getHeading()-tAngle;
                 //deltaAngle = deltaAngle;
                 double dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                telemetry.addData("distance", dist);
+                telemetry.addData("error", dist);
+                telemetry.addData("radiansError", Math.toRadians(deltaAngle));
                 telemetry.addData("thetaError", deltaAngle);
 
                 // Declaring the acceptable error to allow moving onto the next step
@@ -166,13 +156,13 @@ public class DriveFSM
         { // Overriding botstate with wait logic
             ElapsedTime timer;
 
-            double tAngle = 999.0;
-
             @Override
             void start(){
                 // Running parallel arm command
                 if(command!=null)command.run();
 
+                // Subscribe to overriding of angle
+                
                 // Setting pid target to the last target
                 //pid.moveTo(lastX,lastY,lastAngle);
                 //bot.driveXYW(0,0,0);
@@ -182,13 +172,6 @@ public class DriveFSM
             void update(){
                 // Updating pid to move back to rest position if pushed out of it
                 //pid.update();
-
-                // Sit still unless overriding angle
-                if (tAngle == 999.0) bot.driveXYW(0, 0, 0);
-                else {
-                    wPid.setTarget(tAngle);
-                    bot.driveFieldXYW(0, 0, wPid.update(bot.getHeading()));
-                }
 
                 // Moving to next state if wait value has elapsed
                 if(timer.seconds() > seconds) nextState();

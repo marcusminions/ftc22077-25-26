@@ -67,7 +67,7 @@ public class LaunchBot extends Bot {
         left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         conveyor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         resetEncoders();
     }
@@ -108,6 +108,7 @@ public class LaunchBot extends Bot {
     public int getRightPos()         { return rightPos; }
     public double getLeftVelocity()  { return leftVel; }
     public double getRightVelocity() { return rightVel; }
+    public double getIntakePower() { return intake.getPower(); }
 
     // Setters
     public void setLeftPower(double power)        { left.setPower(power); }
@@ -119,6 +120,7 @@ public class LaunchBot extends Bot {
     public void setConveyorPower(double power)        { conveyor.setPower(power); }
     public void setIntakePower(double power)          { intake.setPower(power); }
     public void setKickerPosition(double position)    { kicker.setPosition(position); }
+    
 
     public void setIntakeDirection(DcMotor.Direction dir) { intake.setDirection(dir); }
     

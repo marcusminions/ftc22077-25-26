@@ -32,6 +32,7 @@ public class pinpointtest extends LinearOpMode {
         // Set the location of the robot - this should be the place you are starting the robot from
         pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
     
+        bot.resetIMUHeading();
 
     waitForStart();
     while (opModeIsActive()) {
@@ -40,21 +41,28 @@ public class pinpointtest extends LinearOpMode {
         telemetry.addLine("Press A to reset the position");
         if(gamepad1.a){
             // You could use readings from April Tags here to give a new known position to the pinpoint
-            pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
+            pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 90));
+        } else if (gamepad1.b) {
+            bot.resetHeading();
+        } else if (gamepad1.x) {
+            bot.setPosition(63, -16, 90);
         }
+        
+        
         pinpoint.update();
         Pose2D pose2D = pinpoint.getPosition();
         
-        bot.driveXYW(-gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
+        bot.driveXYW(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
+        // bot.driveXYW(0, 0, .1);
 
+        telemetry.addData("why", gamepad1.right_stick_y);
         telemetry.addData("X coordinate (IN)", pose2D.getX(DistanceUnit.INCH));
         telemetry.addData("Y coordinate (IN)", pose2D.getY(DistanceUnit.INCH));
         telemetry.addData("Heading angle (DEGREES)", pose2D.getHeading(AngleUnit.DEGREES));
         telemetry.addLine("   ");
-        telemetry.addData("FL vel", bot.frontLeft.getVelocity());
-        telemetry.addData("BL vel", bot.backLeft.getVelocity());
-        telemetry.addData("FR vel", bot.frontRight.getVelocity());
-        telemetry.addData("BR vel", bot.backRight.getVelocity());
+        telemetry.addData("x (bot)", bot.getPosition().getX(DistanceUnit.INCH));
+        telemetry.addData("y (bot)", bot.getPosition().getY(DistanceUnit.INCH));
+        telemetry.addData("Heading", bot.getHeading());
         telemetry.update();
     }
     }

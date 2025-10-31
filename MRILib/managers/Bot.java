@@ -47,7 +47,7 @@ public class Bot {
     //creating odometry computer to be initialized in initOdo()
     public GoBildaPinpointDriver odo;
     
-    double angleOffset = 0d;
+    public double angleOffset = 0d;
 
     //creating on-board IMU to be initialized in initIMU()
     public IMU imu;
@@ -167,12 +167,7 @@ public class Bot {
         backRightPos = backRight.getCurrentPosition();
     }
 
-    // Helpers
-    public double fixAngle(double angle) {
-        if (angle > 180) return angle - 360;
-        else if (angle < 180) return angle + 360;
-        else return angle;
-    }
+    
 
     //getter methods
     public DcMotorEx getFL(){ return frontLeft;     }
@@ -188,7 +183,7 @@ public class Bot {
     public int getBLPosPrev() { return backLeftPosPrev;   }
     public int getBRPosPrev() { return backRightPosPrev;  }
 
-    public double getIMUHeading(){ return -imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);}
+    public double getIMUHeading(){ return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);}
     public void resetIMUHeading(){ imu.resetYaw(); }
     
     public Pose2D getPosition(){
@@ -209,17 +204,14 @@ public class Bot {
         // returns the odo position direct from the odometry computer
         // (this is private so that getPosition is used, which is properly synced with the update ticks)
         Pose2D odoPose = odo.getPosition();
-        Pose2D corrected = new Pose2D(
-            DistanceUnit.INCH, odoPose.getY(DistanceUnit.INCH), odoPose.getX(DistanceUnit.INCH),
-            AngleUnit.DEGREES, odo.getHeading(AngleUnit.DEGREES) + 90
-        );
+        Pose2D corrected = new Pose2D(DistanceUnit.INCH, odoPose.getY(DistanceUnit.INCH), -odoPose.getX(DistanceUnit.INCH), AngleUnit.DEGREES, getHeading());
         return corrected;
     }
     private Pose2D getOdoVelocity(){
         // Returns the velocity according to the pinpoint computer
         double x = odo.getVelX(DistanceUnit.INCH);
         double y = odo.getVelY(DistanceUnit.INCH);
-        Pose2D velocity = new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, Math.atan2(y, x));
+        Pose2D velocity = new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, 0);
         return velocity;
     }
     public double getX(){
@@ -233,15 +225,18 @@ public class Bot {
     public double getHeading(){
         // returns the heading value of the current odometry position using 
         // the odometry computer's IMU by default (it seems to be more consistent than the on-board IMU)
-        return fixAngle(getIMUHeading() - angleOffset);
+        double a = odo.getPosition().getHeading(AngleUnit.DEGREES);
+        if (a > 180) a -= 360;
+        if (a < -180) a += 360;
+        return a;
     }
     
     public void resetHeading() {
-        setHeading(0);
-    }
-
-    public void setHeading(double heading) {
-        setPosition(getX(), getY(), heading);
+        angleOffset = 0;
+        angleOffset = getHeading();
+        Pose2D current = odo.getPosition();
+        odo.setPosition(new Pose2D(DistanceUnit.INCH, current.getX(DistanceUnit.INCH),
+            current.getY(DistanceUnit.INCH), AngleUnit.DEGREES, 0));
     }
 
     public synchronized double getVoltage()
@@ -253,8 +248,13 @@ public class Bot {
         return op.telemetry;
     }
     
+    public void setHeading(double heading){
+        setPosition(new Pose2D(DistanceUnit.INCH, getX(), getY(), AngleUnit.DEGREES, heading));
+        angleOffset = heading;
+    }
+    
     public void setPosition(double x, double y){
-        setPosition(new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, getHeading()));
+        setPosition(new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, odo.getPosition().getHeading(AngleUnit.DEGREES)));
     }
     public void setPosition(double x, double y, double heading){
         //overloading setPosition to take an x, y, and heading instead of a pose for QOL
@@ -262,11 +262,7 @@ public class Bot {
     }
     public void setPosition(Pose2D pos)
     { // overriding the current position read by the Gobilda Pinpoint Odometry Computer
-        angleOffset = getIMUHeading() - pos.getHeading(AngleUnit.DEGREES);
-        Pose2D corrected = new Pose2D(
-            DistanceUnit.INCH, pos.getY(DistanceUnit.INCH), pos.getX(DistanceUnit.INCH), 
-            AngleUnit.DEGREES, fixAngle(getHeading() - 90)
-        );
+        Pose2D corrected = new Pose2D(DistanceUnit.INCH, -pos.getY(DistanceUnit.INCH), pos.getX(DistanceUnit.INCH), AngleUnit.DEGREES, pos.getHeading(AngleUnit.DEGREES));
         odo.setPosition(corrected);
     }
 
@@ -349,13 +345,6 @@ public class Bot {
         //    
         //    these power values are then proportionally clamped to stay within a maximum power value of 1, as well
         //    as regulating the max speed using a voltage sensor multiplier
-
-        /*     +y
-         *     |      Rotation is centric to field from red alliance POV, same how FTC does it
-         *   FRONT
-         *   S   S -> +x 
-         *   #BACK
-         */
         
 
         // denom is the multiplier applied to the power calculations in order to 
@@ -368,10 +357,10 @@ public class Bot {
 
         // adding and subtracting the x, y, and theta power values for each wheel to
         // push the robot in the vector direction made when combining all three powers
-        double lfPower = ((ry + rx - rw) / denom) / voltageMulti;
-        double rfPower = ((ry - rx + rw) / denom) / voltageMulti;
-        double lbPower = ((ry - rx - rw) / denom) / voltageMulti;
-        double rbPower = ((ry + rx + rw) / denom) / voltageMulti;
+        double lfPower = ((rx - ry - rw) / denom) / voltageMulti;
+        double rfPower = ((rx + ry + rw) / denom) / voltageMulti;
+        double lbPower = ((rx + ry - rw) / denom) / voltageMulti;
+        double rbPower = ((rx - ry + rw) / denom) / voltageMulti;
         
         // applying calculated vector powers to each motor
         if (usingDriveController) {
@@ -403,22 +392,23 @@ public class Bot {
         //   although initially confusing and disorientating, this driver control mode offers beneficial maneuverability
         //   and at the end of the day makes more sense for the maneuvering that FTC robots must perform in their matches
 
+
         // getting the current robot's yaw, and converting it to a usable form to calculate the offset
-        double theta = Math.toRadians(getHeading());
+        double theta = Math.toRadians(-getHeading());
         if(usingIMU){
-            theta = Math.toRadians(getIMUHeading());
+            theta = Math.toRadians(-getIMUHeading());
         }
         //double theta = Math.toRadians(-getHeading());
 
-        //calculating the robocentric x and y power
-        double ry = fy * Math.cos(theta) - fx * Math.sin(theta);
-        double rx = fx * Math.cos(theta) + fy * Math.sin(theta);
+        //calculating the rotated x power
+        double rx = fx * Math.cos(theta) - fy * Math.sin(theta);
+        //calculating the rotated y power
+        double ry = fx * Math.sin(theta) + fy * Math.cos(theta);
 
         // inputting the new rotated x and y vector to driveXYW
         // passing through the rotation value (fw) as rotation around the robot's z axis
         // is unaffected by rotation of the directional power vector
-        // Strafe should be slightly higher due to wheel slippage
-        driveXYW(rx*1.1, ry, fw);
+        driveXYW(rx, ry*1.15, fw);
     }
 
     // Deal with threading

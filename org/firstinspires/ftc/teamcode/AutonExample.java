@@ -24,11 +24,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 public class AutonExample extends LinearOpMode {
 
     public LaunchBot bot;
+    public PIDController pid;
     public DriveFSM dsm;
     public ArmFSM asm;
-    public PID xPid;
-    public PID yPid;
-    public PID wPid;
 
     @Override
     public void runOpMode() {
@@ -39,14 +37,16 @@ public class AutonExample extends LinearOpMode {
         bot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bot.enableBrakeMode(true);
         
-        PID xPid = new PID(.045, .0, .007);
-        PID yPid = new PID(.049, .0, .007);  // Something about friction for pDy > pDx
-        PID wPid = new PID(.014, .0, .0014);
-        wPid.isAngle = true;
+        PID xPid = new PID(.035, .0, .008);
+        PID yPid = new PID(.035, .0, .008);  // Something about friction for pDy > pDx
+        PID thetaPid = new PID(.08, .0, .014);
+        thetaPid.errorSumTotal = .1;
 
-        wPid.errorSumTotal = .1;
-
-        dsm = new DriveFSM(bot, xPid, yPid, wPid, telemetry);
+        pid = new PIDController(bot, telemetry);
+        pid.setPID(xPid, yPid);
+        pid.setTurnPID(thetaPid);
+        
+        dsm = new DriveFSM(bot, pid, telemetry);
         asm = new ArmFSM(bot, telemetry);
 
         telemetry.addData("Status", "Initialized");
@@ -74,6 +74,9 @@ public class AutonExample extends LinearOpMode {
         
         waitForStart();
         
+        bot.resetIMUHeading();
+        bot.angleOffset = -90;
+        
         if (side == COLOR.RED) {
             reflection = 1;
             bot.setLaunchControllerTarget(redTarget);
@@ -84,7 +87,7 @@ public class AutonExample extends LinearOpMode {
 
         // State machine steps, positions
         Pose2D startPos = new Pose2D(DistanceUnit.INCH, 64, -16 * reflection, AngleUnit.DEGREES, 90);
-        Pose2D midLaunch = new Pose2D(DistanceUnit.INCH, -5, -16 * reflection, AngleUnit.DEGREES, 90);
+        Pose2D midLaunch = new Pose2D(DistanceUnit.INCH, -7, 16 * reflection, AngleUnit.DEGREES, 0);
         Pose2D rightBallTop = new Pose2D(DistanceUnit.INCH, 36, -33 * reflection, AngleUnit.DEGREES, 180 * reflection);
 
         // Configure state machine variables
@@ -121,14 +124,13 @@ public class AutonExample extends LinearOpMode {
             Pose2D currentPos = bot.getPosition();
 
             telemetry.addLine();
-            telemetry.addData("In Launch Zone?", asm.inLaunchZone);
             telemetry.addData("States", asm.currentStates);
             telemetry.addData("Drive State", dsm.steps.get(dsm.currentStep));
             telemetry.addLine();
-            telemetry.addData("Target Angle", wPid.targetVal);
-            telemetry.addData("Current Angle", bot.getHeading());
-            telemetry.addData("Target x", xPid.targetVal);
-            telemetry.addData("Target y", yPid.targetVal);
+            telemetry.addData("Target Angle", pid.getTargetDegrees());
+            telemetry.addData("Current Angle", pid.getCurrentDegrees());
+            telemetry.addData("Target x", pid.getTargetX());
+            telemetry.addData("Target y", pid.getTargetY());
             telemetry.addData("Current x", currentPos.getX(DistanceUnit.INCH));
             telemetry.addData("Current y", currentPos.getY(DistanceUnit.INCH));
             telemetry.addData("Heading", bot.getHeading());
