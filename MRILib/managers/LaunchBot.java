@@ -1,6 +1,7 @@
 package MRILib.managers;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -17,6 +18,7 @@ public class LaunchBot extends Bot {
     private DcMotor conveyor;
     private DcMotor intake;
     private Servo kicker;
+    private LED led;
 
     private LaunchController launchController;
     private Thread launchThread;
@@ -53,6 +55,7 @@ public class LaunchBot extends Bot {
         right = op.hardwareMap.get(DcMotorEx.class, "shootRight");
         conveyor = op.hardwareMap.get(DcMotor.class, "conveyorMotor");
         intake = op.hardwareMap.get(DcMotor.class, "sweeperMotor");
+        led = op.hardwareMap.get(LED.class, "led");
         
         left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -116,10 +119,12 @@ public class LaunchBot extends Bot {
     public void setLeftVelocity(double velocity)  { left.setVelocity(velocity + launchModifier); }
     public void setRightVelocity(double velocity) { right.setVelocity(velocity + launchModifier); }
     
-
     public void setConveyorPower(double power)        { conveyor.setPower(power); }
     public void setIntakePower(double power)          { intake.setPower(power); }
     public void setKickerPosition(double position)    { kicker.setPosition(position); }
+    
+    public void ledOn() { led.on(); }
+    public void ledOff() { led.off(); }
     
 
     public void setIntakeDirection(DcMotor.Direction dir) { intake.setDirection(dir); }

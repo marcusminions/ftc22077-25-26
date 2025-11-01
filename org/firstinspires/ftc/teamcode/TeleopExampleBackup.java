@@ -120,7 +120,7 @@ public class TeleopExampleBackup extends LinearOpMode {
             }
 
             drivingThetaPid.setTarget(angle);
-            double dw = drivingThetaPid.update(-bot.getHeading());
+            double dw = drivingThetaPid.update(bot.getHeading());
             bot.driveFieldXYW(dx, dy, dw);
             
             if (gamepad1.start && gamepad1.dpad_up) bot.resetHeading();

@@ -202,6 +202,7 @@ public class ArmFSM {
         new ArmState("DEFAULT") {
             @Override
             void update() {
+                bot.ledOff();
                 bot.setLaunchControllerAimMode(LaunchMode.OFF);
                 bot.setLaunchControllerPowerMode(LaunchMode.OFF);
 
@@ -262,12 +263,16 @@ public class ArmFSM {
                 bot.setLaunchControllerPowerMode(LaunchMode.POWER);
                 
                 if (auton) {
+                    bot.setConveyorPower(1);
                     if (inventory.size() == 2) bot.setIntakePower(.1);
                     if (inventory.size() == 1) bot.setIntakePower(.5);
                     inLaunchZone = true;
                     bot.setLaunchControllerAimMode(LaunchMode.AIM);
                     setTransition("DEFAULT", inventory.size() < 1);
                     setParallel("KICK", bot.launchReady() && inLaunchZone);
+                    
+                    if (bot.launchReady()) bot.ledOn();
+                    else bot.ledOff();
                 }
             }
             
