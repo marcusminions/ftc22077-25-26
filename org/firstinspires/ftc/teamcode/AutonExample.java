@@ -37,16 +37,21 @@ public class AutonExample extends LinearOpMode {
         bot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bot.enableBrakeMode(true);
         
-        PID xPid = new PID(.035, .0, .008);
-        PID yPid = new PID(.035, .0, .008);  // Something about friction for pDy > pDx
-        PID thetaPid = new PID(.08, .0, .014);
+        PID xPid = new PID(.02, .0, .004);
+        PID yPid = new PID(.024, .0, .004);  // Something about friction for pDy > pDx
+        PID thetaPid = new PID(.005, .0, .001);
+        
+        // Configure PIDs
+        // xPid.setMinValue(.01);
+        // yPid.setMinValue(.01);
+        thetaPid.isAngle = true;
         thetaPid.errorSumTotal = .1;
 
         pid = new PIDController(bot, telemetry);
         pid.setPID(xPid, yPid);
         pid.setTurnPID(thetaPid);
         
-        dsm = new DriveFSM(bot, pid, telemetry);
+        dsm = new DriveFSM(bot, xPid, yPid, thetaPid, telemetry);
         asm = new ArmFSM(bot, telemetry);
 
         telemetry.addData("Status", "Initialized");
@@ -86,8 +91,8 @@ public class AutonExample extends LinearOpMode {
         }
 
         // State machine steps, positions
-        Pose2D startPos = new Pose2D(DistanceUnit.INCH, 64, -16 * reflection, AngleUnit.DEGREES, 90);
-        Pose2D midLaunch = new Pose2D(DistanceUnit.INCH, -7, 16 * reflection, AngleUnit.DEGREES, 0);
+        Pose2D startPos = new Pose2D(DistanceUnit.INCH, 64, -11 * reflection, AngleUnit.DEGREES, -90);
+        Pose2D midLaunch = new Pose2D(DistanceUnit.INCH, -12, -15 * reflection, AngleUnit.DEGREES, -45);
         Pose2D rightBallTop = new Pose2D(DistanceUnit.INCH, 36, -33 * reflection, AngleUnit.DEGREES, 180 * reflection);
 
         // Configure state machine variables
@@ -127,10 +132,10 @@ public class AutonExample extends LinearOpMode {
             telemetry.addData("States", asm.currentStates);
             telemetry.addData("Drive State", dsm.steps.get(dsm.currentStep));
             telemetry.addLine();
-            telemetry.addData("Target Angle", pid.getTargetDegrees());
-            telemetry.addData("Current Angle", pid.getCurrentDegrees());
-            telemetry.addData("Target x", pid.getTargetX());
-            telemetry.addData("Target y", pid.getTargetY());
+            telemetry.addData("Target Angle", thetaPid.getTarget());
+            telemetry.addData("Current Angle", thetaPid.getTarget());
+            telemetry.addData("Target x", xPid.getTarget());
+            telemetry.addData("Target y", yPid.getTarget());
             telemetry.addData("Current x", currentPos.getX(DistanceUnit.INCH));
             telemetry.addData("Current y", currentPos.getY(DistanceUnit.INCH));
             telemetry.addData("Heading", bot.getHeading());

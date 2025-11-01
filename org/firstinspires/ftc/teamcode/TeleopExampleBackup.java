@@ -24,7 +24,7 @@ public class TeleopExampleBackup extends LinearOpMode {
    
     public LaunchBot bot;
     public PIDController pid;
-    public DriveFSM dsm;
+    // public DriveFSM dsm;
     LED led;
     // public ArmFSM asm;
 
@@ -49,7 +49,7 @@ public class TeleopExampleBackup extends LinearOpMode {
         pid.setPID(xPid, yPid);
         pid.setTurnPID(thetaPid);
         
-        dsm = new DriveFSM(bot, pid, telemetry);
+        // dsm = new DriveFSM(bot, pid, telemetry);
         led.off();
         
         // Setup side for teleop so aiming is correct, default to red
@@ -120,7 +120,7 @@ public class TeleopExampleBackup extends LinearOpMode {
             }
 
             drivingThetaPid.setTarget(angle);
-            double dw = drivingThetaPid.update(bot.getHeading());
+            double dw = drivingThetaPid.update(-bot.getHeading());
             bot.driveFieldXYW(dx, dy, dw);
             
             if (gamepad1.start && gamepad1.dpad_up) bot.resetHeading();

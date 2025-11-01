@@ -66,15 +66,6 @@ public class ArmFSM {
     public boolean inLaunchZone = false;
     public List<COLOR> inventory = new ArrayList<>();
 
-    // Miscellaneous functions
-    void detectIntake(BotEvent event) {
-        if (inventory.size() > INVENTORY_SIZE - 1) inventory.remove(0);
-        inventory.add(event.color);
-    }
-
-    void detectLaunch(BotEvent event) {
-        if (inventory.size() > 0) inventory.remove(0);
-    }
     
     // Constructor for Auton when gamepads are not needed
     public ArmFSM(LaunchBot bot, Telemetry telemetry) {
@@ -202,10 +193,6 @@ public class ArmFSM {
     }
 
     private void init() {
-        // subscribe to broadcasts
-        BotEventManager.subscribe(EventType.INTAKE, event -> detectIntake(event));
-        BotEventManager.subscribe(EventType.LAUNCH, event -> detectLaunch(event));
-
         // Add mutually exclusive states
         exclusiveStates.add(new String[] {
             "DEFAULT", "POWER", "FIRE"
@@ -227,14 +214,6 @@ public class ArmFSM {
             void start() { 
                 bot.setIntakePower(INTAKE_POWER);
                 bot.setConveyorPower(RAMP_POWER);
-
-                // Placeholder
-                BotEventManager.broadcast(EventType.INTAKE, new BotEvent(){
-                    public COLOR color = COLOR.PURPLE;
-                });
-                BotEventManager.broadcast(EventType.INTAKE, new BotEvent(){
-                    public COLOR color = COLOR.PURPLE;
-                });
             }
 
             @Override
@@ -265,9 +244,6 @@ public class ArmFSM {
                     kicked = true;
                     
                     if (inventory.size() == 0) inventory.add(COLOR.PURPLE);
-                    // BotEventManager.broadcast(EventType.LAUNCH, new BotEvent(){ 
-                    //     public COLOR color = inventory.get(0);
-                    // });
                 } else if (timer.seconds() > kickTime - KICK_TIME + 1) {
                     bot.setKickerPosition(BACK);
                 }
@@ -276,9 +252,7 @@ public class ArmFSM {
             @Override
             void end() {
                 kicked = false;
-                BotEventManager.broadcast(EventType.LAUNCH, new BotEvent(){ 
-                        public COLOR color = inventory.get(0);
-                });
+                inventory.remove(0);
             }
         };
         
@@ -286,9 +260,10 @@ public class ArmFSM {
             @Override
             void update() {
                 bot.setLaunchControllerPowerMode(LaunchMode.POWER);
-                bot.setIntakePower(.6);
                 
                 if (auton) {
+                    if (inventory.size() == 2) bot.setIntakePower(.1);
+                    if (inventory.size() == 1) bot.setIntakePower(.5);
                     inLaunchZone = true;
                     bot.setLaunchControllerAimMode(LaunchMode.AIM);
                     setTransition("DEFAULT", inventory.size() < 1);

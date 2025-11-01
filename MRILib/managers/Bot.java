@@ -135,7 +135,8 @@ public class Bot {
         */
         odo.setOffsets(26.0, 0, DistanceUnit.MM);
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
+                                 GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
         // resetting the position and heading to zero (this can be reset to a different starting position
         // using setPosition())
@@ -204,7 +205,7 @@ public class Bot {
         // returns the odo position direct from the odometry computer
         // (this is private so that getPosition is used, which is properly synced with the update ticks)
         Pose2D odoPose = odo.getPosition();
-        Pose2D corrected = new Pose2D(DistanceUnit.INCH, odoPose.getY(DistanceUnit.INCH), -odoPose.getX(DistanceUnit.INCH), AngleUnit.DEGREES, getHeading());
+        Pose2D corrected = new Pose2D(DistanceUnit.INCH, -odoPose.getY(DistanceUnit.INCH), odoPose.getX(DistanceUnit.INCH), AngleUnit.DEGREES, getHeading());
         return corrected;
     }
     private Pose2D getOdoVelocity(){
@@ -262,7 +263,7 @@ public class Bot {
     }
     public void setPosition(Pose2D pos)
     { // overriding the current position read by the Gobilda Pinpoint Odometry Computer
-        Pose2D corrected = new Pose2D(DistanceUnit.INCH, -pos.getY(DistanceUnit.INCH), pos.getX(DistanceUnit.INCH), AngleUnit.DEGREES, pos.getHeading(AngleUnit.DEGREES));
+        Pose2D corrected = new Pose2D(DistanceUnit.INCH, pos.getY(DistanceUnit.INCH), -pos.getX(DistanceUnit.INCH), AngleUnit.DEGREES, pos.getHeading(AngleUnit.DEGREES));
         odo.setPosition(corrected);
     }
 
@@ -354,13 +355,17 @@ public class Bot {
         // dividing the power by a multiplier to counteract variance in motor voltage above 12 volts
         // ensuring that power doesnt get unexpectedly high, causing precise movements to get inaccurate 
         double voltageMulti = getVoltage() / 12;
-
+        if (getVoltage() < 12) voltageMulti = 1;  // If voltage < 12, this prevents weird interactions
+        
         // adding and subtracting the x, y, and theta power values for each wheel to
         // push the robot in the vector direction made when combining all three powers
         double lfPower = ((rx - ry - rw) / denom) / voltageMulti;
         double rfPower = ((rx + ry + rw) / denom) / voltageMulti;
         double lbPower = ((rx + ry - rw) / denom) / voltageMulti;
         double rbPower = ((rx - ry + rw) / denom) / voltageMulti;
+        
+        // getTelemetry().addData("LEFT FRONT POWER", denom);
+        // getTelemetry().addData("voltageMulti", getVoltage());
         
         // applying calculated vector powers to each motor
         if (usingDriveController) {

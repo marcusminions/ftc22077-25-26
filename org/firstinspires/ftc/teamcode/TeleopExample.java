@@ -22,7 +22,7 @@ public class TeleopExample extends LinearOpMode {
     
     public LaunchBot bot;
     public PIDController pid;
-    public DriveFSM dsm;
+    // public DriveFSM dsm;
     // public ArmFSM asm;
 
     @Override
@@ -53,7 +53,7 @@ public class TeleopExample extends LinearOpMode {
         pid.setPID(xPid, yPid);
         pid.setTurnPID(thetaPid);
         
-        dsm = new DriveFSM(bot, pid, telemetry);
+        // dsm = new DriveFSM(bot, pid, telemetry);
         
         // Setup side for teleop so aiming is correct, default to red
         COLOR side = COLOR.RED;

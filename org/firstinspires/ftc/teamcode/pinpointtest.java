@@ -41,11 +41,11 @@ public class pinpointtest extends LinearOpMode {
         telemetry.addLine("Press A to reset the position");
         if(gamepad1.a){
             // You could use readings from April Tags here to give a new known position to the pinpoint
-            pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 90));
+            pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
         } else if (gamepad1.b) {
             bot.resetHeading();
         } else if (gamepad1.x) {
-            bot.setPosition(63, -16, 90);
+            bot.setPosition(64, -16, -90);
         }
         
         
@@ -55,7 +55,6 @@ public class pinpointtest extends LinearOpMode {
         bot.driveXYW(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
         // bot.driveXYW(0, 0, .1);
 
-        telemetry.addData("why", gamepad1.right_stick_y);
         telemetry.addData("X coordinate (IN)", pose2D.getX(DistanceUnit.INCH));
         telemetry.addData("Y coordinate (IN)", pose2D.getY(DistanceUnit.INCH));
         telemetry.addData("Heading angle (DEGREES)", pose2D.getHeading(AngleUnit.DEGREES));

@@ -3,6 +3,7 @@ package MRILib.statemachine;
 import MRILib.managers.*;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import MRILib.motion.PIDController;
+import MRILib.motion.PID;
 import MRILib.util.Mathf;
 import MRILib.eventlistener.BotEventManager.*;
 import MRILib.eventlistener.BotEventManager;
@@ -22,15 +23,21 @@ import java.util.concurrent.atomic.AtomicReference;
 public class DriveFSM
 {
     private Bot bot;
-    private PIDController pid = null;
+    // private PIDController pid = null;
+    public PID xPid;
+    public PID yPid;
+    public PID wPid;
+    
     public ArrayList<BotState> steps = new ArrayList<>();
     Telemetry telemetry;
 
     public int currentStep = 0;
 
-    public DriveFSM(Bot bot, PIDController pid, Telemetry telemetry){
+    public DriveFSM(Bot bot, PID xPid, PID yPid, PID wPid, Telemetry telemetry){
         this.bot = bot;
-        this.pid = pid;
+        this.xPid = xPid;
+        this.yPid = yPid;
+        this.wPid = wPid;
         this.telemetry = telemetry;
     }
     
@@ -67,13 +74,13 @@ public class DriveFSM
     //MOVETO OVERLOADS
     
     public DriveFSM moveTo(double x, double y, double theta, Runnable command) {
-        return moveTo(x, y, theta, command, 5); }
+        return moveTo(x, y, theta, command, 15); }
 
     public DriveFSM moveTo(double x, double y, double theta, double timeout) { 
         return moveTo(x, y, theta, null, timeout); }
 
     public DriveFSM moveTo(double x, double y, double theta) { 
-        return moveTo(x, y, theta, null, 5); }
+        return moveTo(x, y, theta, null, 15); }
 
     public DriveFSM moveTo(Pose2D pose){ 
         return moveTo(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), pose.getHeading(AngleUnit.DEGREES)); }
@@ -101,7 +108,10 @@ public class DriveFSM
                 if(command!=null)command.run();
 
                 // Setting PID target position
-                pid.moveTo(tx,ty,tAngle);
+                // pid.moveTo(tx,ty,tAngle);
+                xPid.setTarget(tx);
+                yPid.setTarget(ty);
+                wPid.setTarget(tAngle);
     
                 // Saving old values
                 lastX = tx;
@@ -114,8 +124,13 @@ public class DriveFSM
             @Override
             void update(){
                 // Updating pid to set motor values
-                pid.setAngle(tAngle);
-                pid.update();
+                // pid.setAngle(tAngle);
+                double fx = xPid.update(bot.getX());
+                double fy = yPid.update(bot.getY());
+                double fw = wPid.update(bot.getHeading());
+                
+                // Set power to robot
+                bot.driveFieldXYW(fy, -fx, fw);
 
                 // Calculating distance from target position using odometry
                 Pose2D curPos = bot.getPosition();
@@ -165,7 +180,7 @@ public class DriveFSM
                 
                 // Setting pid target to the last target
                 //pid.moveTo(lastX,lastY,lastAngle);
-                //bot.driveXYW(0,0,0);
+                bot.driveXYW(0,0,0);
                 timer = new ElapsedTime();
             }
             @Override
@@ -192,55 +207,4 @@ public class DriveFSM
         });
         return this;
     }
-    
-    // public void findSample(){
-    //     steps.add(new BotState("FINDING SAMPLE TO INTAKE..."){
-    //         ElapsedTime timer;
-    //         ElapsedTime wiggleTimer;
-    //         AutoBotLL autobot = (AutoBotLL)bot;
-    //         double maxPower = .4;
-    //         double minPower = .2;
-    //         boolean wiggleLeft = false;
-            
-    //         @Override void start(){
-    //             timer = new ElapsedTime();
-    //             wiggleTimer = new ElapsedTime();
-    //         }
-    //         @Override
-    //         void update(){
-    //             LLResult result = autobot.limelight.getLatestResult();
-    //             if(result != null){
-    //                 DetectorResult target = result.getDetectorResults().get(0);
-    //                 double xPower = 0;
-    //                 double yPower = 0;
-                    
-    //                 if(target!=null){
-    //                     double targetX = target.getTargetXDegrees();
-    //                     xPower = (double)(Math.abs(targetX)-minPower)/(maxPower-minPower);
-    //                     double targetY = target.getTargetYDegrees();
-    //                     yPower = (double)(Math.abs(targetY)-minPower)/(maxPower-minPower);
-                        
-    //                     xPower*=Math.signum(targetX);
-    //                     yPower*=Math.signum(targetY);
-    //                     autobot.driveXYW(xPower,yPower,0);
-    //                 }else{
-    //                     autobot.driveXYW(0,0,wiggleLeft?-.3:.3);
-    //                 }
-                    
-    //                 if(xPower<.2 && yPower<.2){
-    //                     nextState();
-    //                 }
-    //             }
-                
-    //             if(wiggleTimer.seconds()>.35){
-    //                 wiggleTimer.reset();
-    //                 wiggleLeft = !wiggleLeft;
-    //             }
-                
-    //             if(timer.seconds()>1.5){
-    //                 nextState();
-    //             }
-    //         }
-    //     });
-    // }
 }

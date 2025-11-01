@@ -10,6 +10,7 @@ public class PID {
     public double iLimit = 1;
 
     public double targetVal = 0;
+    public double minVal = 0;
     
     double errorSum = 0;
     public double errorSumTotal = .1;
@@ -59,7 +60,12 @@ public class PID {
         lastTime = timer.seconds();
         lastError = error;
         
+        if (Math.abs(value) < minVal && value != 0) value = minVal * (value / Math.abs(value));
         return value;
+    }
+    
+    public void setMinValue(double minimum) {
+        minVal = minimum;
     }
     
     public double update(double current1, double current2){
@@ -68,6 +74,10 @@ public class PID {
     
     public void setTarget(double target){
         targetVal = target;
+    }
+    
+    public double getTarget() {
+        return targetVal;
     }
     
     public void setILimit(double limit){
