@@ -22,13 +22,16 @@ public class LaunchController implements Runnable {
     public enum LaunchMode {
         OFF,  // No motor action
         POWER,  // Power flywheels
-        AIM  // Aim at target
+        AIM,  // Aim at target
+        CLOSE,
+        FAR
     }
 
     // Volatile stuff can get updated from outside
     public volatile boolean running = true;
     private volatile LaunchMode aimMode = LaunchMode.OFF;
     private volatile LaunchMode powerMode = LaunchMode.OFF;
+    private volatile LaunchMode firePosition = LaunchMode.CLOSE;
     public volatile Pose2D target;
     public volatile double launchAngle = 30d;
 
@@ -49,13 +52,6 @@ public class LaunchController implements Runnable {
         this.bot = bot;
         telemetry = bot.getTelemetry();
     }
-
-    private void overrideSteering(boolean o, double a) {
-        BotEventManager.broadcast(EventType.OVERRIDE_DIRECTION, new BotEvent(){ 
-            public boolean override = o;
-            public double angle = a;
-        });
-    }
     
     @Override
     public void run() {
@@ -75,12 +71,17 @@ public class LaunchController implements Runnable {
             // ...
 
             // Placeholders
-            deltaTheta = 30.0;
-            targetLeftVel = 1750.0;
-            targetRightVel = 1750.0;
+            deltaTheta = 0.0;
+            
+            if (firePosition == LaunchMode.CLOSE) {
+                targetLeftVel = 1750.0;
+                targetRightVel = 1750.0;
+            } else {
+                targetLeftVel = 1925.0;
+                targetRightVel = 1925.0;
+            }
 
             // Now, only launch if on
-            if (aimMode == LaunchMode.AIM) overrideSteering(true, deltaTheta);
             if (powerMode == LaunchMode.POWER) {
                 bot.setLeftVelocity(targetLeftVel);
                 bot.setRightVelocity(targetRightVel);
@@ -108,9 +109,10 @@ public class LaunchController implements Runnable {
             return true;
         } else return false;
     }
-
+    
     public void setAimMode(LaunchMode mode) { aimMode = mode; }
     public void setPowerMode(LaunchMode mode) { powerMode = mode; }
+    public void setFirePosition(LaunchMode mode) { firePosition = mode; }
     public void setLaunchTarget(Pose2D t) { target = t; }
 
     public void stop() {

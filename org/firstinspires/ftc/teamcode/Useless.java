@@ -126,7 +126,7 @@ public class Useless extends LinearOpMode {
         
         for(AprilTagDetection detection : currentDetections) {
             telemetry.addData("AprilTag", detection.ftcPose);
-            /*if(detection.ftcPose == null) continue;
+            if(detection.ftcPose == null) continue;
             if(detection.robotPose == null) continue;
             double x = detection.robotPose.getPosition().x;
             double y = detection.robotPose.getPosition().y;
@@ -144,7 +144,7 @@ public class Useless extends LinearOpMode {
         
             telemetry.addData("Position", X+" "+Y);
             
-            telemetry.addData("position", detection.ftcPose.x+" "+detection.ftcPose.y);*/
+            telemetry.addData("position", detection.ftcPose.x+" "+detection.ftcPose.y);
         }
             
             /*telemetry.addData("power", power);

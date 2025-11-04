@@ -40,7 +40,7 @@ public class AutonExample extends LinearOpMode {
         
         PID xPid = new PID(.041, .0, .0044);
         PID yPid = new PID(.044, .0, .0044);  // Something about friction for pDy > pDx
-        PID thetaPid = new PID(.008, .0, .001);
+        PID thetaPid = new PID(.015, .0, .0012);
         
         // Configure PIDs
         // xPid.setMinValue(.01);
@@ -70,11 +70,13 @@ public class AutonExample extends LinearOpMode {
         boolean lastRB = false;
         double startDelay = 2;
         boolean farPos = true;
+        boolean farShoot = false;
         while (opModeInInit()) {
             if (gamepad1.a || gamepad2.a) side = COLOR.RED;
             if (gamepad1.b || gamepad2.b) side = COLOR.BLUE;
-            if (gamepad1.dpad_left || gamepad2.dpad_left) farPos = false;
+            if (gamepad1.dpad_left || gamepad2.dpad_left) { farPos = false; farShoot = false; }
             if (gamepad1.dpad_right || gamepad2.dpad_right) farPos = true;
+            if (gamepad1.dpad_up || gamepad2.dpad_up) farShoot = true;
             
             if ((gamepad1.left_bumper || gamepad2.left_bumper) && !lastLB) startDelay -= 1;
             if ((gamepad1.right_bumper || gamepad2.right_bumper) && !lastRB) startDelay += 1;
@@ -86,10 +88,12 @@ public class AutonExample extends LinearOpMode {
             telemetry.addLine("Side: A=red, B=blue");
             telemetry.addLine("Start Delay: lb=decrease, rb=increase");
             telemetry.addLine("Start Position: dpad left=goal, dpad right=far");
+            telemetry.addLine("Shoot Position: dpad up=far");
             telemetry.addLine(" ");
             telemetry.addData("Side", side == COLOR.BLUE ? "BLUE" : "RED");
             telemetry.addData("Start Delay", startDelay);
             telemetry.addData("Position = far?", farPos);
+            telemetry.addData("Shoot = far?", farShoot);
             telemetry.update();
         }
         
@@ -106,10 +110,11 @@ public class AutonExample extends LinearOpMode {
         }
 
         // State machine steps, positions
-        Pose2D goalStart = new Pose2D(DistanceUnit.INCH, -62, -43 * reflection, AngleUnit.DEGREES, -90);
+        Pose2D goalStart = new Pose2D(DistanceUnit.INCH, -62, -42 * reflection, AngleUnit.DEGREES, -90);
         Pose2D farStart = new Pose2D(DistanceUnit.INCH, 63, -11 * reflection, AngleUnit.DEGREES, -90);
+        Pose2D farLaunch = new Pose2D(DistanceUnit.INCH, 59, -11 * reflection, AngleUnit.DEGREES, -90 + 20*reflection);
         Pose2D midLaunch = new Pose2D(DistanceUnit.INCH, -11, -12 * reflection, AngleUnit.DEGREES, -90 + 45*reflection);
-        Pose2D rightBallTop = new Pose2D(DistanceUnit.INCH, 36, -33 * reflection, AngleUnit.DEGREES, 180 * reflection);
+        Pose2D farBall = new Pose2D(DistanceUnit.INCH, 36, -40 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
         Pose2D endPos = new Pose2D(DistanceUnit.INCH, 36, -24 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
 
         // Configure state machine variables
@@ -120,20 +125,42 @@ public class AutonExample extends LinearOpMode {
         
         // Add permanent states
         asm.addState("P-LAUNCHZONE");
-
-        if (!farPos) bot.setPosition(goalStart);
-        else bot.setPosition(farStart);
-
-        dsm.waitForSeconds(startDelay);
-        dsm.moveTo(midLaunch);
-        dsm.waitForSeconds(1).run(() ->
-        asm.addState("FIRE"));
-        dsm.waitForSeconds(10);
-        dsm.moveTo(endPos);
+        
+        if (!farShoot) {
+            if (!farPos) bot.setPosition(goalStart);
+            else bot.setPosition(farStart);
+    
+            dsm.waitForSeconds(startDelay);
+            dsm.moveTo(midLaunch);
+            dsm.waitForSeconds(1).run(() ->
+            asm.addState("FIRE"));
+            dsm.waitForSeconds(10);
+            dsm.moveTo(endPos);
+            dsm.waitForSeconds(20);
+            // dsm.moveTo(midLauch).run(() ->
+            // asm.addState("FIRE"));
+            // dsm.waitForSeconds(30);
+        } else {
+            bot.setPosition(farStart);
+            bot.setLaunchControllerFirePosition(LaunchController.LaunchMode.FAR);
+            
+            dsm.waitForSeconds(startDelay);
+            dsm.moveTo(farLaunch);
+            dsm.waitForSeconds(1).run(() ->
+            asm.addState("FIRE"));
+            dsm.waitForSeconds(8);
+            dsm.moveTo(endPos);
+            dsm.moveTo(farBall).run(() ->
+            asm.addState("INTAKE"));
+            dsm.moveTo(farLaunch);
+            dsm.waitForSeconds(1).run(() ->
+            asm.end("INTAKE")).run(() ->
+            asm.addState("FIRE"));
+            dsm.waitForSeconds(8);
+            dsm.moveTo(endPos);
+        }
+        
         dsm.waitForSeconds(20);
-        // dsm.moveTo(midLauch).run(() ->
-        // asm.addState("FIRE"));
-        // dsm.waitForSeconds(30);
 
         dsm.start();
         asm.start();

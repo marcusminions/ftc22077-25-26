@@ -148,6 +148,10 @@ public class LaunchBot extends Bot {
         launchController.setPowerMode(mode);
     }
     
+    public void setLaunchControllerFirePosition(LaunchController.LaunchMode mode) {
+        launchController.setFirePosition(mode);
+    }
+    
     public boolean launchReady() { return launchController.launchReady(); }
 
     // Deal with threads

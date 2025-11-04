@@ -176,11 +176,6 @@ public class ArmFSM {
         for (String[] mutual : exclusiveStates) {
             if (Arrays.asList(mutual).contains(state.name)) {
                 for (ArmState c : currentStates) {
-                    if (state.name == "DEFAULT") {
-                        // telemetry.addData(state.name, Arrays.asList(mutual).contains("FIRE"));
-                        // telemetry.addData(state.name, currentStates.indexOf(c));
-                        // telemetry.addData(state.name, Arrays.asList(mutual));
-                    };
                     if (c.name != state.name && Arrays.asList(mutual).contains(c.name) && currentStates.indexOf(c) > currentStates.indexOf(state.name)) {
                         remove = true;
                     }
@@ -197,6 +192,9 @@ public class ArmFSM {
         exclusiveStates.add(new String[] {
             "DEFAULT", "POWER", "FIRE"
         });
+        exclusiveStates.add(new String[] {
+            "DEFAULT", "INTAKE"
+        });
 
         // DEFAULT STATE
         new ArmState("DEFAULT") {
@@ -207,14 +205,15 @@ public class ArmFSM {
                 bot.setLaunchControllerPowerMode(LaunchMode.OFF);
 
                 bot.setConveyorPower(0);
+                bot.setIntakePower(.1);
             }
         };
 
         new ArmState("INTAKE") {
             @Override
             void start() { 
-                bot.setIntakePower(INTAKE_POWER);
-                bot.setConveyorPower(RAMP_POWER);
+                bot.setIntakePower(1);
+                bot.setConveyorPower(0);
             }
 
             @Override
