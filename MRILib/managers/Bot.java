@@ -355,7 +355,7 @@ public class Bot {
         // dividing the power by a multiplier to counteract variance in motor voltage above 12 volts
         // ensuring that power doesnt get unexpectedly high, causing precise movements to get inaccurate 
         double voltageMulti = getVoltage() / 12;
-        if (getVoltage() < 12) voltageMulti = 1;  // If voltage < 12, this prevents weird interactions
+        // if (getVoltage() < 12) voltageMulti = 1;  // If voltage < 12, this prevents weird interactions
         
         // adding and subtracting the x, y, and theta power values for each wheel to
         // push the robot in the vector direction made when combining all three powers

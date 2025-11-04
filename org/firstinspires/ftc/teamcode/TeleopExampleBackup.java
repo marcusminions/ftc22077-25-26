@@ -41,7 +41,7 @@ public class TeleopExampleBackup extends LinearOpMode {
         PID xPid = new PID(.7, .08, .02);
         PID yPid = new PID(.8, .08, .02);  // Something about friction for pDy > pDx
         PID thetaPid = new PID(1.5, .98, .09);
-        PID drivingThetaPid = new PID(.014, 0, .0014);
+        PID drivingThetaPid = new PID(.01, 0, .0014); // Originally .014, 0, .0014
         thetaPid.errorSumTotal = .1;
         drivingThetaPid.isAngle = true;
 

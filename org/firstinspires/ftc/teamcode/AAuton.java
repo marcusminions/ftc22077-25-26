@@ -41,6 +41,9 @@ public class AAuton extends LinearOpMode {
         while (opModeInInit()) {
             if (gamepad1.a) reversal = 1;
             if (gamepad1.b) reversal = -1;
+            
+            if (reversal == 1) telemetry.addData("Direction", "LEFT");
+            else telemetry.addData("Direction", "RIGHT");
         }
 
         waitForStart();
@@ -49,10 +52,10 @@ public class AAuton extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             
-            frontLeftDrive.setPower(.1 * reversal);
-            frontRightDrive.setPower(.1 * reversal);
-            backLeftDrive.setPower(.1 * reversal);
-            backRightDrive.setPower(.1 * reversal);
+            frontLeftDrive.setPower(.3 * -reversal);
+            frontRightDrive.setPower(.3 * reversal);
+            backLeftDrive.setPower(.3 * reversal);
+            backRightDrive.setPower(.3 * -reversal);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());

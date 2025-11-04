@@ -76,8 +76,8 @@ public class LaunchController implements Runnable {
 
             // Placeholders
             deltaTheta = 30.0;
-            targetLeftVel = 1780.0;
-            targetRightVel = 1780.0;
+            targetLeftVel = 1750.0;
+            targetRightVel = 1750.0;
 
             // Now, only launch if on
             if (aimMode == LaunchMode.AIM) overrideSteering(true, deltaTheta);
