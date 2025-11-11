@@ -134,6 +134,7 @@ public class DriveFSM
 
                 // Calculating distance from target position using odometry
                 Pose2D curPos = bot.getPosition();
+                Pose2D velocity = bot.getVelocity();
                 double deltaX = tx - curPos.getX(DistanceUnit.INCH);
                 double deltaY = ty - curPos.getY(DistanceUnit.INCH);
                 double deltaAngle = bot.getHeading()-tAngle;
@@ -144,7 +145,12 @@ public class DriveFSM
                 telemetry.addData("thetaError", deltaAngle);
 
                 // Declaring the acceptable error to allow moving onto the next step
-                if(dist < 5 && Math.abs(deltaAngle) < 3){
+                if(dist < 5
+                    && Math.abs(deltaAngle) < 3
+                    && velocity.getX(DistanceUnit.INCH) < 5
+                    && velocity.getY(DistanceUnit.INCH) < 5
+                    // && Math.abs(velocity.getHeading(AngleUnit.DEGREES)) < 20
+                ) {
                     nextState();
                 }
                 // Moving onto the next step if timer is above a timeout

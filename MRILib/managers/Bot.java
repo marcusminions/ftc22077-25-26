@@ -1,6 +1,7 @@
 package MRILib.managers;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -11,6 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 //import org.pmrobotics.ledmatrix.GoBildaPinpointDriver;
 
@@ -212,7 +214,9 @@ public class Bot {
         // Returns the velocity according to the pinpoint computer
         double x = odo.getVelX(DistanceUnit.INCH);
         double y = odo.getVelY(DistanceUnit.INCH);
-        Pose2D velocity = new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, 0);
+        double h = odo.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES);
+        h = Range.clip(h, -179.0, 179.0);
+        Pose2D velocity = new Pose2D(DistanceUnit.INCH, -y, x, AngleUnit.DEGREES, h);
         return velocity;
     }
     public double getX(){

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -59,9 +60,9 @@ public class pinpointtest extends LinearOpMode {
         telemetry.addData("Y coordinate (IN)", pose2D.getY(DistanceUnit.INCH));
         telemetry.addData("Heading angle (DEGREES)", pose2D.getHeading(AngleUnit.DEGREES));
         telemetry.addLine("   ");
-        telemetry.addData("x (bot)", bot.getPosition().getX(DistanceUnit.INCH));
-        telemetry.addData("y (bot)", bot.getPosition().getY(DistanceUnit.INCH));
-        telemetry.addData("Heading", bot.getHeading());
+        telemetry.addData("X velocity (IN/s?)", pinpoint.getVelX(DistanceUnit.INCH));
+        telemetry.addData("Y velocity (IN/s?)", pinpoint.getVelY(DistanceUnit.INCH));
+        telemetry.addData("Heading velocity", pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES));
         telemetry.update();
     }
     }

@@ -190,10 +190,7 @@ public class ArmFSM {
     private void init() {
         // Add mutually exclusive states
         exclusiveStates.add(new String[] {
-            "DEFAULT", "POWER", "FIRE"
-        });
-        exclusiveStates.add(new String[] {
-            "DEFAULT", "INTAKE"
+            "DEFAULT", "POWER", "FIRE", "INTAKE"
         });
 
         // DEFAULT STATE
@@ -211,9 +208,10 @@ public class ArmFSM {
 
         new ArmState("INTAKE") {
             @Override
-            void start() { 
-                bot.setIntakePower(1);
+            void update() {
+                bot.setIntakePower(.65);
                 bot.setConveyorPower(0);
+                if (inventory.size() < 3) inventory.add(COLOR.PURPLE);
             }
 
             @Override
@@ -262,7 +260,7 @@ public class ArmFSM {
                 bot.setLaunchControllerPowerMode(LaunchMode.POWER);
                 
                 if (auton) {
-                    bot.setConveyorPower(1);
+                    bot.setConveyorPower(0);
                     if (inventory.size() == 2) bot.setIntakePower(.1);
                     if (inventory.size() == 1) bot.setIntakePower(.5);
                     inLaunchZone = true;
