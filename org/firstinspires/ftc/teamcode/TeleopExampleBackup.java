@@ -37,6 +37,10 @@ public class TeleopExampleBackup extends LinearOpMode {
         led = hardwareMap.get(LED.class, "led");
         bot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bot.enableBrakeMode(true);
+        
+        PID leftPid = new PID(1, .3, 0);
+        PID rightPid = new PID(1, .3, 0);
+        bot.setFlywheelPID(leftPid, rightPid);
 
         PID xPid = new PID(.7, .08, .02);
         PID yPid = new PID(.8, .08, .02);  // Something about friction for pDy > pDx
@@ -151,7 +155,6 @@ public class TeleopExampleBackup extends LinearOpMode {
             
             if (flyWheelToggle) {
                 bot.setLeftVelocity(gamepad2.left_trigger * 1810);
-             
                 bot.setRightVelocity(gamepad2.left_trigger * 1810);
                 gamepad2.rumble(75);
             } else {

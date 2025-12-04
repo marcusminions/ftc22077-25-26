@@ -83,8 +83,10 @@ public class LaunchController implements Runnable {
 
             // Now, only launch if on
             if (powerMode == LaunchMode.POWER) {
-                bot.setLeftVelocity(targetLeftVel);
-                bot.setRightVelocity(targetRightVel);
+                // bot.setLeftVelocity(targetLeftVel);
+                // bot.setRightVelocity(targetRightVel);
+                bot.setLeftPower(.96);
+                bot.setRightPower(.96);
             } else {
                 bot.setLeftPower(0);
                 bot.setRightPower(0);
@@ -104,8 +106,8 @@ public class LaunchController implements Runnable {
     }
     
     public boolean launchReady() {
-        if (Math.abs(bot.getLeftVelocity()) > Math.abs(targetLeftVel) - 30 &&
-            Math.abs(bot.getRightVelocity()) > Math.abs(targetRightVel) - 30) {
+        if (Math.abs(bot.getLeftVelocity()) > targetLeftVel  - 30 &&
+            Math.abs(bot.getRightVelocity()) > targetRightVel - 30) {
             return true;
         } else return false;
     }

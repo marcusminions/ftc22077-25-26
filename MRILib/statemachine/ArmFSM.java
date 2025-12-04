@@ -211,7 +211,7 @@ public class ArmFSM {
             void update() {
                 bot.setIntakePower(.65);
                 bot.setConveyorPower(0);
-                if (inventory.size() < 3) inventory.add(COLOR.PURPLE);
+                if (inventory.size() < 2) inventory.add(COLOR.PURPLE);
             }
 
             @Override
@@ -251,6 +251,7 @@ public class ArmFSM {
             void end() {
                 kicked = false;
                 inventory.remove(0);
+                bot.setKickerPosition(BACK);
             }
         };
         

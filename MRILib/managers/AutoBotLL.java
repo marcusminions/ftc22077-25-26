@@ -1,12 +1,24 @@
 package MRILib.managers;
 
 import java.util.*;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import java.util.concurrent.TimeUnit;
 
 import MRILib.util.*;
+import MRILib.GameValues.COLOR;
+import static MRILib.BotValues.*;
 
 //webcam imports
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -133,5 +145,50 @@ public class AutoBotLL extends LaunchBot {
         return (false);
     }
     
+    public void getPositionWebcam(AprilTagDetection detection) {
+        if(detection.id == 20 || detection.id == 24) {
+            //goal
+            double x = detection.robotPose.getPosition().x - WEBCAM_X_OFFSET;
+            double y = detection.robotPose.getPosition().y - WEBCAM_Y_OFFSET;
+            double yaw = detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES) - WEBCAM_ANGLE_OFFSET;
+            
+            Pose2D position = new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, yaw);
+            
+            setPosition(x, y, yaw);
+            
+        }
+        else if(detection.id == 21 || detection.id == 22 || detection.id == 23) {
+            //obelisk
+            op.telemetry.addData("Obelisk Apriltag with id", detection.id);
+        }
+        else {
+            op.telemetry.addData("unknown apriltag with id", detection.id);
+            
+        }
+    }
+    
+    public COLOR[] getPatternWebcam(AprilTagDetection detection) {
+        if(detection.id == 21 || detection.id == 22 || detection.id == 23) {
+            if(detection.id == 21) {
+                //GPP
+                return new COLOR[]{COLOR.GREEN, COLOR.PURPLE, COLOR.PURPLE};
+            }
+            else if(detection.id == 22) {
+                //PGP
+                return new COLOR[]{COLOR.PURPLE, COLOR.GREEN, COLOR.PURPLE};
+            }
+            else if(detection.id == 23) {
+                //PPG
+                return new COLOR[]{COLOR.PURPLE, COLOR.PURPLE, COLOR.GREEN};
+            }
+        }
+        else if (detection.id == 20 || detection.id == 24) {
+            op.telemetry.addData("Goal Apriltag with id", detection.id);
+        }
+        else {
+            op.telemetry.addData("Unknown AprilTag with id", detection.id);
+        }
+        return null;
+    }
     
 }

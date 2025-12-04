@@ -41,4 +41,8 @@ public class BotValues {
     public static final double WHEEL_DIAMETER_SLIDE = .150; //in meters
     public static final double WHEEL_CIRCUMFERENCE_SLIDE = 128;
     public static final double DISTANCE_PER_TICK_SLIDE = WHEEL_CIRCUMFERENCE_SLIDE/TICKS_PER_REVOLUTION_SLIDE;
+    
+    public static final double WEBCAM_X_OFFSET = 0;
+    public static final double WEBCAM_Y_OFFSET = 0;
+    public static final double WEBCAM_ANGLE_OFFSET = 0;
 }

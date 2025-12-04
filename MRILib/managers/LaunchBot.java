@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 import static MRILib.BotValues.*;
+import MRILib.motion.PID;
 import static MRILib.GameValues.DEFAULT_LAUNCH_MODIFIDER;
 
 public class LaunchBot extends Bot {
@@ -33,6 +34,9 @@ public class LaunchBot extends Bot {
     public int launchModifier;
     public int lastLaunchModifier;
     
+    public PID flywheelLeft;
+    public PID flywheelRight;
+    
     public LaunchBot (LinearOpMode op) {
         super(op);
         initServos();
@@ -40,6 +44,11 @@ public class LaunchBot extends Bot {
         launchController = new LaunchController(this);
         launchThread = new Thread(launchController);
         resetEncoders();
+    }
+
+    public void setFlywheelPID(PID l, PID r) {
+        flywheelLeft = l;
+        flywheelRight = r;
     }
 
     // Update launch controller
@@ -114,10 +123,19 @@ public class LaunchBot extends Bot {
     public double getIntakePower() { return intake.getPower(); }
 
     // Setters
-    public void setLeftPower(double power)        { left.setPower(power); }
-    public void setRightPower(double power)       { right.setPower(power); }
-    public void setLeftVelocity(double velocity)  { left.setVelocity(velocity + launchModifier); }
-    public void setRightVelocity(double velocity) { right.setVelocity(velocity + launchModifier); }
+    public void setLeftPower(double power)        { 
+        double voltageMulti = getVoltage() / 13;
+        // left.setPower(power / voltageMulti);
+        left.setPower(1);
+    }
+    public void setRightPower(double power)       { 
+        double voltageMulti = getVoltage() / 13;
+        // right.setPower(power / voltageMulti);
+        right.setPower(1);
+    }
+    
+    public void setLeftVelocity(double velocity)  { left.setVelocity(velocity); }
+    public void setRightVelocity(double velocity) { right.setVelocity(velocity); }
     
     public void setConveyorPower(double power)        { conveyor.setPower(power); }
     public void setIntakePower(double power)          { intake.setPower(power); }

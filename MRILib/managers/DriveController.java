@@ -62,38 +62,39 @@ public class DriveController implements Runnable {
 
             // Find primary direction of travel, always use front wheel drive
             // Forward
-            if (Math.abs(forward) >= Math.abs(right) &&
-                Math.abs(forward) >= Math.abs(turnCW) &&
-                forward >= 0d) {
-                    frontLeft.setPower(flPower);
-                    frontRight.setPower(frPower);
-                    backRight.setPower(brPower);
-                    backLeft.setPower(blPower);
-            // Backward
-            } else if (Math.abs(forward) >= Math.abs(right) &&
-                Math.abs(forward) >= Math.abs(turnCW) &&
-                forward <= 0d) {
-                    backLeft.setPower(blPower);
-                    backRight.setPower(brPower);
-                    frontRight.setPower(frPower);
-                    frontLeft.setPower(flPower);
-            // Right
-            } else if (Math.abs(right) >= Math.abs(forward) &&
-                Math.abs(right) >= Math.abs(turnCW) &&
-                right >= 0d) {
-                    backRight.setPower(brPower);
-                    frontRight.setPower(frPower);
-                    frontLeft.setPower(flPower);
-                    backLeft.setPower(blPower);
-            // Left
-            } else if (Math.abs(right) >= Math.abs(forward) &&
-                Math.abs(right) >= Math.abs(turnCW) &&
-                right <= 0d) {
-                    backLeft.setPower(blPower);
-                    frontLeft.setPower(flPower);
-                    frontRight.setPower(frPower);
-                    backRight.setPower(brPower);
+            // if (Math.abs(forward) >= Math.abs(right) &&
+            //     Math.abs(forward) >= Math.abs(turnCW) &&
+            //     forward >= 0d) {
+            //         frontLeft.setPower(flPower);
+            //         frontRight.setPower(frPower);
+            //         backRight.setPower(brPower);
+            //         backLeft.setPower(blPower);
+            // // Backward
+            // } else if (Math.abs(forward) >= Math.abs(right) &&
+            //     Math.abs(forward) >= Math.abs(turnCW) &&
+            //     forward <= 0d) {
+            //         backLeft.setPower(blPower);
+            //         backRight.setPower(brPower);
+            //         frontRight.setPower(frPower);
+            //         frontLeft.setPower(flPower);
+            // // Right
+            // } else if (Math.abs(right) >= Math.abs(forward) &&
+            //     Math.abs(right) >= Math.abs(turnCW) &&
+            //     right >= 0d) {
+            //         backRight.setPower(brPower);
+            //         frontRight.setPower(frPower);
+            //         frontLeft.setPower(flPower);
+            //         backLeft.setPower(blPower);
+            // // Left
+            // } else if (Math.abs(right) >= Math.abs(forward) &&
+            //     Math.abs(right) >= Math.abs(turnCW) &&
+            //     right <= 0d) {
+            //         backLeft.setPower(blPower);
+            //         frontLeft.setPower(flPower);
+            //         frontRight.setPower(frPower);
+            //         backRight.setPower(brPower);
             // Rotation (not a big deal)
+            if (false) {
             } else {
                 frontLeft.setPower(flPower);
                 backRight.setPower(blPower);
@@ -105,6 +106,12 @@ public class DriveController implements Runnable {
     }
 
     public void setPowers(double fl, double fr, double bl, double br) {
+        telemetry.addData("fl", flPower);
+        telemetry.addData("fr", frPower);
+        telemetry.addData("bl", blPower);
+        telemetry.addData("br", brPower);
+        // telemetry.update();
+        
         lastFLPower = flPower;
         lastFRPower = frPower;
         lastBLPower = blPower;

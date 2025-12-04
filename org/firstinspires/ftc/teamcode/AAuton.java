@@ -38,9 +38,9 @@ public class AAuton extends LinearOpMode {
         bot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bot.enableBrakeMode(true);
         
-        PID xPid = new PID(.041, .0, .0044);
-        PID yPid = new PID(.044, .0, .0044);  // Something about friction for pDy > pDx
-        PID thetaPid = new PID(.015, .1, .0012);
+        PID xPid = new PID(.041, .0, .01);
+        PID yPid = new PID(.044, .0, .01);  // Something about friction for pDy > pDx
+        PID thetaPid = new PID(.015, .1, .0015);
         
         // Configure PIDs
         // xPid.setMinValue(.01);
@@ -68,9 +68,9 @@ public class AAuton extends LinearOpMode {
         // ADD CONTROLLER SETTINGS HERE
         boolean lastLB = false;
         boolean lastRB = false;
-        double startDelay = 2;
+        double startDelay = 1;
         boolean farPos = true;
-        boolean farShoot = false;
+        boolean farShoot = true;
         while (opModeInInit()) {
             if (gamepad1.a || gamepad2.a) side = COLOR.RED;
             if (gamepad1.b || gamepad2.b) side = COLOR.BLUE;
@@ -112,13 +112,19 @@ public class AAuton extends LinearOpMode {
         // State machine steps, positions
         Pose2D goalStart = new Pose2D(DistanceUnit.INCH, -62, -42 * reflection, AngleUnit.DEGREES, -90);
         Pose2D farStart = new Pose2D(DistanceUnit.INCH, 63, -11 * reflection, AngleUnit.DEGREES, -90);
-        Pose2D farLaunch = new Pose2D(DistanceUnit.INCH, 59, -11 * reflection, AngleUnit.DEGREES, -90 + 20*reflection);
+        Pose2D farLaunch = new Pose2D(DistanceUnit.INCH, 59, -11 * reflection, AngleUnit.DEGREES, -90 + 18*reflection);
         Pose2D midLaunch = new Pose2D(DistanceUnit.INCH, -11, -12 * reflection, AngleUnit.DEGREES, -90 + 45*reflection);
-        Pose2D farBall = new Pose2D(DistanceUnit.INCH, 36, -40 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
-        Pose2D endPos = new Pose2D(DistanceUnit.INCH, 36, -24 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
+        Pose2D farBallStart = new Pose2D(DistanceUnit.INCH, 36, -33 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
+        Pose2D farBallEnd = new Pose2D(DistanceUnit.INCH, 36, -45 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
+        Pose2D middleBallStart = new Pose2D(DistanceUnit.INCH, 11, -33 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
+        Pose2D middleBallEnd = new Pose2D(DistanceUnit.INCH, 11, -45 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
+        Pose2D closeBallStart = new Pose2D(DistanceUnit.INCH, -11, -33 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
+        Pose2D closeBallEnd = new Pose2D(DistanceUnit.INCH, -11, -45 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
+        Pose2D goalEnd = new Pose2D(DistanceUnit.INCH, 36, -24 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
+        Pose2D farEnd = new Pose2D(DistanceUnit.INCH, 36, -24 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
+        
 
         // Configure state machine variables
-        asm.inventory.add(COLOR.PURPLE);
         asm.inventory.add(COLOR.PURPLE);
         asm.inventory.add(COLOR.PURPLE);
         asm.auton = true;
@@ -135,8 +141,8 @@ public class AAuton extends LinearOpMode {
             dsm.waitForSeconds(1).run(() ->
             asm.addState("FIRE"));
             dsm.waitForSeconds(10);
-            dsm.moveTo(endPos);
-            dsm.waitForSeconds(20);
+            // dsm.moveTo(endPos);
+            // dsm.waitForSeconds(20);
             // dsm.moveTo(midLaunch).run(() ->
             // asm.addState("FIRE"));
             // dsm.waitForSeconds(30);
@@ -145,19 +151,35 @@ public class AAuton extends LinearOpMode {
             bot.setLaunchControllerFirePosition(LaunchController.LaunchMode.FAR);
             
             dsm.waitForSeconds(startDelay);
+            
+            
+            //First Shoot
             dsm.moveTo(farLaunch);
             dsm.waitForSeconds(1).run(() ->
             asm.addState("FIRE"));
-            dsm.waitForSeconds(8);
-            dsm.moveTo(endPos).run(() ->
+            dsm.waitForSeconds(8).run(() ->
+            asm.end("FIRE")).run(() ->
+            asm.end("KICK"));
+            
+            dsm.moveTo(farBallStart);
+            dsm.waitForSeconds(.5).run(() ->
             asm.addState("INTAKE"));
-            dsm.moveTo(farBall);
+            dsm.moveTo(farBallEnd).run(() ->
+            asm.end("INTAKE"));
+            // //dsm.waitForSeconds(1);
+            // dsm.moveTo(farBallStart);
+            //dsm.waitForSeconds(1);
+            
+            
+            //Second Shoot
             dsm.moveTo(farLaunch);
             dsm.waitForSeconds(1).run(() ->
-            asm.end("INTAKE")).run(() ->
             asm.addState("FIRE"));
-            dsm.waitForSeconds(8);
-            dsm.moveTo(endPos);
+            dsm.waitForSeconds(6).run(() ->
+            asm.end("FIRE")).run(() ->
+            asm.end("KICK"));
+            
+            dsm.moveTo(farEnd);
         }
         
         dsm.waitForSeconds(20);
@@ -180,6 +202,7 @@ public class AAuton extends LinearOpMode {
             telemetry.addData("States", asm.currentStates);
             telemetry.addData("Drive State", dsm.steps.get(dsm.currentStep));
             telemetry.addLine();
+            telemetry.addData("Flywheel Velocity", bot.getLeftVelocity());
             telemetry.addData("Target Angle", thetaPid.getTarget());
             telemetry.addData("Current Angle", thetaPid.getTarget());
             telemetry.addData("Target x", xPid.getTarget());
