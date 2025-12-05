@@ -176,7 +176,7 @@ public class ArmFSM {
         for (String[] mutual : exclusiveStates) {
             if (Arrays.asList(mutual).contains(state.name)) {
                 for (ArmState c : currentStates) {
-                    if (c.name != state.name && Arrays.asList(mutual).contains(c.name) && currentStates.indexOf(c) > currentStates.indexOf(state.name)) {
+                    if (c.name != state.name && Arrays.asList(mutual).contains(c.name) && currentStates.indexOf(c) > currentStates.indexOf(state)) {
                         remove = true;
                     }
                 }
@@ -190,7 +190,7 @@ public class ArmFSM {
     private void init() {
         // Add mutually exclusive states
         exclusiveStates.add(new String[] {
-            "DEFAULT", "POWER", "FIRE", "INTAKE"
+            "DEFAULT", "POWER", "FIRE", "INTAKE", "HOLD"
         });
 
         // DEFAULT STATE
@@ -221,6 +221,18 @@ public class ArmFSM {
             }
         };
 
+        new ArmState("HOLD") {
+            @Override
+            void update() {
+                bot.setIntakePower(.2);
+                bot.setConveyorPower(0);
+            }
+            @Override
+            void end() {
+                bot.setIntakePower(0);
+            }
+        };
+
         new ArmState("POWER") {
             @Override
             void update() {
@@ -235,6 +247,10 @@ public class ArmFSM {
             
             @Override
             void update() {
+                telemetry.addData("KICK State", "Active");
+                telemetry.addData("Kicked Boolean", kicked);
+                telemetry.addData("Timer", timer.seconds());
+
                 setTransition("P-END", kicked && timer.seconds() > kickTime);
                 if (!kicked) {
                     bot.setKickerPosition(KICK);
@@ -268,6 +284,9 @@ public class ArmFSM {
                     bot.setLaunchControllerAimMode(LaunchMode.AIM);
                     setTransition("DEFAULT", inventory.size() < 1);
                     setParallel("KICK", bot.launchReady() && inLaunchZone);
+                    
+                    telemetry.addData("Launch Ready", bot.launchReady());
+                    telemetry.addData("In Launch Zone", inLaunchZone);
                     
                     if (bot.launchReady()) bot.ledOn();
                     else bot.ledOff();

@@ -53,6 +53,8 @@ public class LaunchController implements Runnable {
         telemetry = bot.getTelemetry();
     }
     
+    private double currentPower = 0;
+
     @Override
     public void run() {
         long loopTime = 10;
@@ -82,18 +84,37 @@ public class LaunchController implements Runnable {
             }
 
             // Now, only launch if on
+            double targetPower = 0;
             if (powerMode == LaunchMode.POWER) {
-                // bot.setLeftVelocity(targetLeftVel);
-                // bot.setRightVelocity(targetRightVel);
-                bot.setLeftPower(.96);
-                bot.setRightPower(.96);
-            } else {
-                bot.setLeftPower(0);
-                bot.setRightPower(0);
+                targetPower = 0.96;
+            }
+            //KRISH LOVES  GOONING
+            //
+
+            // Ramp logic (approx 1.5s to full speed)
+            double rampRate = 0.006;
+            if (currentPower < targetPower) {
+                currentPower += rampRate; // +0.6% per 10ms loop
+            } else if (currentPower > targetPower) {
+                currentPower -= rampRate;
             }
             
+            // Clamp
+            if (Math.abs(currentPower - targetPower) < rampRate) currentPower = targetPower;
+
+            bot.setLeftPower(currentPower);
+            bot.setRightPower(currentPower);
+            
             // END OF LOOP ACTIONS -- Waiting until next loop
-            while(System.nanoTime() < nextLoopTime){}
+            long remainingTime = nextLoopTime - System.nanoTime();
+            if (remainingTime > 0) {
+                try {
+                    Thread.sleep(remainingTime / 1_000_000, (int)(remainingTime % 1_000_000));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    running = false;
+                }
+            }
             nextLoopTime += loopTime * 1_000_000;
         }
     }
@@ -106,8 +127,8 @@ public class LaunchController implements Runnable {
     }
     
     public boolean launchReady() {
-        if (Math.abs(bot.getLeftVelocity()) > targetLeftVel  - 30 &&
-            Math.abs(bot.getRightVelocity()) > targetRightVel - 30) {
+        if (Math.abs(bot.getLeftVelocity()) > targetLeftVel  - 100 &&
+            Math.abs(bot.getRightVelocity()) > targetRightVel - 100) {
             return true;
         } else return false;
     }

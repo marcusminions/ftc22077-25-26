@@ -112,7 +112,7 @@ public class AAuton extends LinearOpMode {
         // State machine steps, positions
         Pose2D goalStart = new Pose2D(DistanceUnit.INCH, -62, -42 * reflection, AngleUnit.DEGREES, -90);
         Pose2D farStart = new Pose2D(DistanceUnit.INCH, 63, -11 * reflection, AngleUnit.DEGREES, -90);
-        Pose2D farLaunch = new Pose2D(DistanceUnit.INCH, 59, -11 * reflection, AngleUnit.DEGREES, -90 + 18*reflection);
+        Pose2D farLaunch = new Pose2D(DistanceUnit.INCH, 59, -11 * reflection, AngleUnit.DEGREES, -90 + 17*reflection);
         Pose2D midLaunch = new Pose2D(DistanceUnit.INCH, -11, -12 * reflection, AngleUnit.DEGREES, -90 + 45*reflection);
         Pose2D farBallStart = new Pose2D(DistanceUnit.INCH, 36, -33 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
         Pose2D farBallEnd = new Pose2D(DistanceUnit.INCH, 36, -45 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
@@ -165,7 +165,7 @@ public class AAuton extends LinearOpMode {
             dsm.waitForSeconds(.5).run(() ->
             asm.addState("INTAKE"));
             dsm.moveTo(farBallEnd).run(() ->
-            asm.end("INTAKE"));
+            asm.addState("HOLD"));
             // //dsm.waitForSeconds(1);
             // dsm.moveTo(farBallStart);
             //dsm.waitForSeconds(1);
@@ -175,7 +175,7 @@ public class AAuton extends LinearOpMode {
             dsm.moveTo(farLaunch);
             dsm.waitForSeconds(1).run(() ->
             asm.addState("FIRE"));
-            dsm.waitForSeconds(6).run(() ->
+            dsm.waitForSeconds(8).run(() ->
             asm.end("FIRE")).run(() ->
             asm.end("KICK"));
             

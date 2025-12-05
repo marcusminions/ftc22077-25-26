@@ -126,12 +126,12 @@ public class LaunchBot extends Bot {
     public void setLeftPower(double power)        { 
         double voltageMulti = getVoltage() / 13;
         // left.setPower(power / voltageMulti);
-        left.setPower(1);
+        left.setPower(power);
     }
     public void setRightPower(double power)       { 
         double voltageMulti = getVoltage() / 13;
         // right.setPower(power / voltageMulti);
-        right.setPower(1);
+        right.setPower(power);
     }
     
     public void setLeftVelocity(double velocity)  { left.setVelocity(velocity); }

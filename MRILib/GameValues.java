@@ -34,14 +34,14 @@ public class GameValues {
     public static Pose2D BLUE_SPIKE_RIGHT =  new Pose2D(DistanceUnit.INCH, -12, 48, AngleUnit.DEGREES, 0);
 
     // Robot Constants
-    public static final double WIDTH = 16d;
-    public static final double LENGTH = 17d;
+    public static final double WIDTH = 12;
+    public static final double LENGTH = 15d;
     public static final int INVENTORY_SIZE = 2;
 
     // Launch related constants
     public static double KICK = .0;  // Kicker servo positions
     public static double BACK = .10;
-    public static double KICK_TIME = 2;
+    public static double KICK_TIME = 2.5;
     public static int DEFAULT_LAUNCH_MODIFIDER = 0;
     public static double RAMP_POWER = 1;
     public static double INTAKE_POWER = .7;
