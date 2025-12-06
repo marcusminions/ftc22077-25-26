@@ -112,10 +112,10 @@ public class AAuton extends LinearOpMode {
         // State machine steps, positions
         Pose2D goalStart = new Pose2D(DistanceUnit.INCH, -62, -42 * reflection, AngleUnit.DEGREES, -90);
         Pose2D farStart = new Pose2D(DistanceUnit.INCH, 63, -11 * reflection, AngleUnit.DEGREES, -90);
-        Pose2D farLaunch = new Pose2D(DistanceUnit.INCH, 59, -11 * reflection, AngleUnit.DEGREES, -90 + 17*reflection);
+        Pose2D farLaunch = new Pose2D(DistanceUnit.INCH, 59, -11 * reflection, AngleUnit.DEGREES, -90 + 18*reflection);
         Pose2D midLaunch = new Pose2D(DistanceUnit.INCH, -11, -12 * reflection, AngleUnit.DEGREES, -90 + 45*reflection);
         Pose2D farBallStart = new Pose2D(DistanceUnit.INCH, 36, -33 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
-        Pose2D farBallEnd = new Pose2D(DistanceUnit.INCH, 36, -45 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
+        Pose2D farBallEnd = new Pose2D(DistanceUnit.INCH, 36, -47 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
         Pose2D middleBallStart = new Pose2D(DistanceUnit.INCH, 11, -33 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
         Pose2D middleBallEnd = new Pose2D(DistanceUnit.INCH, 11, -45 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);
         Pose2D closeBallStart = new Pose2D(DistanceUnit.INCH, -11, -33 * reflection, AngleUnit.DEGREES, -90 - 90*reflection);

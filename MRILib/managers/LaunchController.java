@@ -86,7 +86,11 @@ public class LaunchController implements Runnable {
             // Now, only launch if on
             double targetPower = 0;
             if (powerMode == LaunchMode.POWER) {
-                targetPower = 0.96;
+                if (bot.getVoltage() < 12.8) {
+                    targetPower = 0.98;
+                } else {
+                    targetPower = 0.96;
+                }
             }
             //KRISH LOVES  GOONING
             //
